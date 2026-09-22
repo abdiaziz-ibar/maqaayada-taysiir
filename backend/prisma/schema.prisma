@@ -1,0 +1,352 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String   @id @default(uuid())
+  fullName         String
+  username         String   @unique
+  password         String
+  role             String   @default("staff") // "admin" | "staff"
+  canManageFinance Boolean  @default(false) // staff-only gate; admins always pass
+  status           String   @default("active") // "active" | "inactive"
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  mealAttendances  MealAttendance[]
+  occasionalMeals  OccasionalMeal[]
+  payments         Payment[]
+  auditLogs        AuditLog[]
+
+  @@map("users")
+}
+
+model AcademicYear {
+  id        String    @id @default(uuid())
+  name      String    @unique // "2026-2027"
+  startDate DateTime
+  endDate   DateTime
+  isActive  Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  invoices Invoice[]
+
+  @@map("academic_years")
+}
+
+model Class {
+  id        String    @id @default(uuid())
+  name      String    @unique // "Grade 2"
+  order     Int       @default(0)
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  sections Section[]
+  students Student[]
+
+  @@map("classes")
+}
+
+model Section {
+  id        String   @id @default(uuid())
+  classId   String
+  name      String // "A"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  class    Class     @relation(fields: [classId], references: [id], onDelete: Cascade)
+  students Student[]
+
+  @@unique([classId, name])
+  @@map("sections")
+}
+
+model Parent {
+  id               String    @id @default(uuid())
+  parentCode       String    @unique
+  fullName         String
+  phone            String    @unique
+  alternativePhone String?
+  address          String?
+  email            String?
+  notes            String?
+  status           String    @default("active")
+  password         String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  students Student[]
+  payments Payment[]
+
+  @@map("parents")
+}
+
+model MealPlan {
+  id           String    @id @default(uuid())
+  name         String // "KG Full Board", "Grade Full"
+  mealTypes    String[] // ["breakfast","lunch"]
+  monthlyPrice Float
+  startDate    DateTime?
+  endDate      DateTime?
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  students        Student[]
+  feeAdjustments  FeeAdjustment[]
+
+  @@map("meal_plans")
+}
+
+model Student {
+  id             String    @id @default(uuid())
+  studentCode    String    @unique
+  fullName       String
+  gender         String? // "male" | "female"
+  dateOfBirth    DateTime?
+  classId        String?
+  sectionId      String?
+  parentId       String
+  mealPlanId     String?
+  enrollmentDate DateTime  @default(now())
+  status         String    @default("active") // "active" | "inactive"
+  notes          String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  class           Class?            @relation(fields: [classId], references: [id], onDelete: SetNull)
+  section         Section?          @relation(fields: [sectionId], references: [id], onDelete: SetNull)
+  parent          Parent            @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  mealPlan        MealPlan?         @relation(fields: [mealPlanId], references: [id], onDelete: SetNull)
+  invoices        Invoice[]
+  mealAttendances MealAttendance[]
+  occasionalMeals OccasionalMeal[]
+
+  @@map("students")
+}
+
+model Holiday {
+  id          String   @id @default(uuid())
+  name        String
+  startDate   DateTime
+  endDate     DateTime
+  type        String // "public" | "school"
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  feeAdjustments FeeAdjustment[]
+
+  @@map("holidays")
+}
+
+// Overrides the amount charged for a given calendar month, e.g. because a
+// holiday closes the school for most of it. mealPlanId=null applies to every
+// plan; a row scoped to one plan overrides the null-scoped row for that plan.
+model FeeAdjustment {
+  id             String   @id @default(uuid())
+  year           Int
+  month          Int
+  adjustmentType String // "full" | "half" | "custom" | "none"
+  customAmount   Float?
+  reason         String?
+  holidayId      String?
+  mealPlanId     String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  holiday  Holiday?  @relation(fields: [holidayId], references: [id], onDelete: SetNull)
+  mealPlan MealPlan? @relation(fields: [mealPlanId], references: [id], onDelete: Cascade)
+
+  @@unique([year, month, mealPlanId])
+  @@map("fee_adjustments")
+}
+
+model Invoice {
+  id             String   @id @default(uuid())
+  studentId      String
+  academicYearId String
+  year           Int
+  month          Int
+  amountDue      Float
+  amountPaid     Float    @default(0)
+  balance        Float
+  status         String   @default("unpaid") // "unpaid" | "partial" | "paid" | "overdue"
+  dueDate        DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  student      Student            @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear       @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
+  allocations  PaymentAllocation[]
+
+  @@unique([studentId, year, month])
+  @@map("invoices")
+}
+
+model Payment {
+  id            String   @id @default(uuid())
+  receiptNumber String   @unique
+  parentId      String
+  amount        Float
+  paymentDate   DateTime @default(now())
+  method        String // "Cash" | "Bank" | "Mobile Money" | "Other"
+  reference     String?
+  receivedById  String?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  parent      Parent              @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  receivedBy  User?               @relation(fields: [receivedById], references: [id], onDelete: SetNull)
+  allocations PaymentAllocation[]
+
+  @@map("payments")
+}
+
+model PaymentAllocation {
+  id        String   @id @default(uuid())
+  paymentId String
+  invoiceId String
+  amount    Float
+  createdAt DateTime @default(now())
+
+  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@unique([paymentId, invoiceId])
+  @@map("payment_allocations")
+}
+
+// isActive is soft-delete: once a Food has ever appeared on a Menu it must
+// never be hard-deleted, or historical menu reports would lose the item.
+model Food {
+  id          String   @id @default(uuid())
+  name        String
+  category    String?
+  description String?
+  ingredients String?
+  allergens   String?
+  mealType    String?
+  isActive    Boolean  @default(true)
+  imageUrl    String?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  menuItems MenuItem[]
+
+  @@map("foods")
+}
+
+model Menu {
+  id        String   @id @default(uuid())
+  date      DateTime
+  mealType  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items MenuItem[]
+
+  @@unique([date, mealType])
+  @@map("menus")
+}
+
+model MenuItem {
+  id      String @id @default(uuid())
+  menuId  String
+  foodId  String
+
+  menu Menu @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  food Food @relation(fields: [foodId], references: [id], onDelete: Restrict)
+
+  @@unique([menuId, foodId])
+  @@map("menu_items")
+}
+
+// One row per student per day per meal type. "expected" is computed from the
+// student's active MealPlan/holiday calendar at record-creation time; "ate"
+// is null until staff record it, then true/false.
+model MealAttendance {
+  id           String    @id @default(uuid())
+  studentId    String
+  date         DateTime
+  mealType     String
+  expected     Boolean   @default(true)
+  ate          Boolean?
+  status       String    @default("expected") // "expected" | "ate" | "did_not_eat"
+  recordedById String?
+  recordedAt   DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  student    Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  recordedBy User?   @relation(fields: [recordedById], references: [id], onDelete: SetNull)
+
+  @@unique([studentId, date, mealType])
+  @@map("meal_attendances")
+}
+
+// A student who is NOT on an active MealPlan eating a one-off meal. Never
+// converts the student onto a recurring plan (business rule §7/Rule 3).
+model OccasionalMeal {
+  id             String   @id @default(uuid())
+  studentId      String
+  date           DateTime
+  mealType       String
+  time           DateTime @default(now())
+  recordedById   String
+  amountCharged  Float?
+  paymentStatus  String   @default("unpaid") // "unpaid" | "paid"
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  student    Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  recordedBy User    @relation(fields: [recordedById], references: [id], onDelete: Restrict)
+
+  @@map("occasional_meals")
+}
+
+model AuditLog {
+  id            String   @id @default(uuid())
+  userId        String?
+  action        String
+  module        String
+  recordId      String?
+  previousValue Json?
+  newValue      Json?
+  createdAt     DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("audit_logs")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  type      String
+  message   String
+  module    String?
+  relatedId String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@map("notifications")
+}
+
+model SystemSettings {
+  id                  String   @id @default("default")
+  schoolName          String   @default("Taysiir International Schools")
+  currency            String   @default("$")
+  occasionalMealPrice Float    @default(1)
+  updatedAt           DateTime @updatedAt
+
+  @@map("system_settings")
+}
