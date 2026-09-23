@@ -56,3 +56,55 @@ Default admin login: **admin / Admin@123** — change it after first login.
 - Backend `.env` (`DATABASE_URL`, `JWT_SECRET`, `PORT=5050`, `CLIENT_ORIGIN`) and frontend `.env` (`VITE_API_URL`) are pre-filled for local development against a local Postgres instance.
 - Ports were deliberately chosen (5050/5174) to not collide with `school-fee-system` (5000/5173) when both run at once locally.
 - Excel exports use the `xlsx` package client-side; PDF export is via the browser's print dialog on print-styled pages (receipts, reports).
+
+## Deployment (production — `maqaayda.idraakict.com`)
+
+Nginx serves the built frontend as static files and reverse-proxies `/api/*` to the backend, which runs under PM2. GitHub Actions deploys automatically on every push to `main`.
+
+**One-time server setup** (`/var/www/html/maqaayda-taysiir`, owned by the deploy user — not root):
+
+```bash
+sudo chown -R $USER:$USER /var/www/html/maqaayda-taysiir
+
+# Backend .env — real production secrets, never committed
+cd backend
+cat > .env <<'EOF'
+DATABASE_URL=postgresql://postgres:<password>@localhost:5432/taysiir_canteen?schema=public
+JWT_SECRET=<long random secret, different from local dev>
+JWT_EXPIRES_IN=7d
+PORT=5050
+NODE_ENV=production
+CLIENT_ORIGIN=https://maqaayda.idraakict.com
+EOF
+
+createdb taysiir_canteen   # if it doesn't already exist on this server's Postgres
+npm ci
+npx prisma migrate deploy
+npm run seed                # first deploy only — creates admin/Admin@123 (change it after)
+
+npm install -g pm2          # if not already installed
+pm2 start ecosystem.config.js
+pm2 save
+pm2 startup                 # run the printed command once so PM2 survives a reboot
+
+cd ../frontend
+echo "VITE_API_URL=https://maqaayda.idraakict.com/api" > .env
+npm ci
+npm run build
+
+# Nginx site
+sudo cp ../deploy/nginx/maqaayda.idraakict.com.conf /etc/nginx/sites-available/maqaayda.idraakict.com
+sudo ln -s /etc/nginx/sites-available/maqaayda.idraakict.com /etc/nginx/sites-enabled/
+sudo nginx -t && sudo systemctl reload nginx
+sudo certbot --nginx -d maqaayda.idraakict.com
+```
+
+**GitHub Actions** (`.github/workflows/deploy.yml`): on every push to `main`, SSHes into the server, pulls, reinstalls deps, runs `prisma migrate deploy`, rebuilds the frontend, and restarts the PM2 process. Needs these repo secrets (Settings → Secrets and variables → Actions):
+
+| Secret | Value |
+|---|---|
+| `DEPLOY_HOST` | the server's hostname/IP |
+| `DEPLOY_USER` | the deploy user (e.g. `abdiaziz`) |
+| `DEPLOY_SSH_KEY` | private half of a dedicated deploy keypair (its public half goes in that user's `~/.ssh/authorized_keys` on the server) |
+
+After the first deploy, any future `git push` to `main` ships automatically — no manual server steps beyond the one-time setup above.
