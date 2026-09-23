@@ -61,10 +61,10 @@ Default admin login: **admin / Admin@123** — change it after first login.
 
 Nginx serves the built frontend as static files and reverse-proxies `/api/*` to the backend, which runs under PM2. GitHub Actions deploys automatically on every push to `main`.
 
-**One-time server setup** (`/var/www/html/maqaayda-taysiir`, owned by the deploy user — not root):
+**One-time server setup** (`/var/www/html/maqaayada-taysiir`, owned by the deploy user — not root):
 
 ```bash
-sudo chown -R $USER:$USER /var/www/html/maqaayda-taysiir
+sudo chown -R $USER:$USER /var/www/html/maqaayada-taysiir
 
 # Backend .env — real production secrets, never committed
 cd backend
