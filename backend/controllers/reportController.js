@@ -135,4 +135,46 @@ const studentMealHistory = async (req, res, next) => {
   }
 };
 
-module.exports = { outstandingBalances, monthlyPaymentReport, annualReport, studentMealHistory };
+// GET /api/reports/profit-loss?year=&month=
+// "Xisaab-xir": money in (meal-fee payments + paid occasional meals) vs
+// money out (operating expenses) for one calendar month, so a loss shows
+// up immediately rather than being buried in separate pages.
+const profitAndLoss = async (req, res, next) => {
+  try {
+    const year = Number(req.query.year);
+    const month = Number(req.query.month);
+    if (!year || !month) return res.status(400).json({ message: "Sanad iyo bil waa waajib." });
+
+    const start = new Date(Date.UTC(year, month - 1, 1));
+    const end = new Date(Date.UTC(year, month, 1));
+
+    const [payments, occasionalMeals, expenses] = await Promise.all([
+      prisma.payment.findMany({ where: { paymentDate: { gte: start, lt: end } } }),
+      prisma.occasionalMeal.findMany({ where: { date: { gte: start, lt: end }, paymentStatus: "paid" } }),
+      prisma.expense.findMany({ where: { date: { gte: start, lt: end } } }),
+    ]);
+
+    const mealFeeIncome = payments.reduce((sum, p) => sum + p.amount, 0);
+    const occasionalIncome = occasionalMeals.reduce((sum, m) => sum + (m.amountCharged || 0), 0);
+    const totalIncome = mealFeeIncome + occasionalIncome;
+
+    const expensesByCategory = {};
+    for (const e of expenses) {
+      expensesByCategory[e.category] = (expensesByCategory[e.category] || 0) + e.amount;
+    }
+    const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
+
+    res.json({
+      year,
+      month,
+      income: { mealFeePayments: mealFeeIncome, occasionalMeals: occasionalIncome, total: totalIncome },
+      expenses: { total: totalExpenses, byCategory: expensesByCategory, items: expenses },
+      net: totalIncome - totalExpenses,
+      isLoss: totalIncome - totalExpenses < 0,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { outstandingBalances, monthlyPaymentReport, annualReport, studentMealHistory, profitAndLoss };

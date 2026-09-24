@@ -22,6 +22,7 @@ model User {
   occasionalMeals  OccasionalMeal[]
   payments         Payment[]
   auditLogs        AuditLog[]
+  expenses         Expense[]
 
   @@map("users")
 }
@@ -349,4 +350,24 @@ model SystemSettings {
   updatedAt           DateTime @updatedAt
 
   @@map("system_settings")
+}
+
+// Operating expenses (food supplies, equipment, utilities, etc.) — the
+// "money out" side of the profit & loss report, alongside meal-fee/
+// occasional-meal payments as "money in".
+model Expense {
+  id            String   @id @default(uuid())
+  category      String // "food_supplies" | "equipment" | "utilities" | "salary" | "other"
+  description   String // adeegga/alaabta la iibsaday
+  amount        Float
+  date          DateTime @default(now())
+  paymentMethod String? // "Cash" | "Bank" | "Mobile Money" | "Other"
+  recordedById  String?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  recordedBy User? @relation(fields: [recordedById], references: [id], onDelete: SetNull)
+
+  @@map("expenses")
 }

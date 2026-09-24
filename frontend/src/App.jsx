@@ -26,8 +26,10 @@ import Payments from "./pages/Payments";
 import PaymentNew from "./pages/PaymentNew";
 import Receipt from "./pages/Receipt";
 import OutstandingBalances from "./pages/OutstandingBalances";
+import Expenses from "./pages/Expenses";
 import MonthlyPaymentReport from "./pages/reports/MonthlyPaymentReport";
 import AnnualReport from "./pages/reports/AnnualReport";
+import ProfitLoss from "./pages/reports/ProfitLoss";
 import Users from "./pages/Users";
 import AuditLogs from "./pages/AuditLogs";
 import Settings from "./pages/Settings";
@@ -68,9 +70,11 @@ function App() {
           <Route path="/payments/new" element={<PaymentNew />} />
           <Route path="/payments/:id/receipt" element={<Receipt />} />
           <Route path="/outstanding-balances" element={<OutstandingBalances />} />
+          <Route path="/expenses" element={<Expenses />} />
 
           <Route path="/reports/monthly" element={<MonthlyPaymentReport />} />
           <Route path="/reports/annual" element={<AnnualReport />} />
+          <Route path="/reports/profit-loss" element={<ProfitLoss />} />
 
           <Route path="/users" element={<Users />} />
           <Route path="/audit-logs" element={<AuditLogs />} />

@@ -17,6 +17,7 @@ import {
   CalendarRange,
   UserCog,
   FileWarning,
+  Wallet,
   Settings as SettingsIcon,
   ChevronDown,
   ChevronRight,
@@ -77,6 +78,7 @@ const Sidebar = ({ open, onClose }) => {
           <NavItem to="/invoices" icon={Receipt} onClick={onClose}>Invoices</NavItem>
           <NavItem to="/payments" icon={CreditCard} onClick={onClose}>Lacag Bixinta</NavItem>
           <NavItem to="/outstanding-balances" icon={AlertTriangle} onClick={onClose}>Deymaha</NavItem>
+          <NavItem to="/expenses" icon={Wallet} onClick={onClose}>Kharashaadka</NavItem>
 
           <button
             onClick={() => setReportsOpen((o) => !o)}
@@ -92,6 +94,7 @@ const Sidebar = ({ open, onClose }) => {
             <div className="pl-4 space-y-1">
               <NavItem to="/reports/monthly" onClick={onClose}>Warbixin Bille</NavItem>
               <NavItem to="/reports/annual" onClick={onClose}>Warbixin Sannadeed</NavItem>
+              <NavItem to="/reports/profit-loss" onClick={onClose}>Xisaab-xirka</NavItem>
             </div>
           )}
 
