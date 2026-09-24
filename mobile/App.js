@@ -1,0 +1,49 @@
+import { StatusBar } from "expo-status-bar";
+import { View, ActivityIndicator } from "react-native";
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { AuthProvider, useAuth } from "./src/context/AuthContext";
+import LoginScreen from "./src/screens/LoginScreen";
+import ParentNavigator from "./src/navigation/ParentNavigator";
+import StaffNavigator from "./src/navigation/StaffNavigator";
+import { COLORS } from "./src/utils/format";
+
+const Stack = createNativeStackNavigator();
+
+const RootNavigator = () => {
+  const { parent, staff, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: COLORS.paper }}>
+        <ActivityIndicator size="large" color={COLORS.navy} />
+      </View>
+    );
+  }
+
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      {parent ? (
+        <Stack.Screen name="Parent" component={ParentNavigator} />
+      ) : staff ? (
+        <Stack.Screen name="Staff" component={StaffNavigator} />
+      ) : (
+        <Stack.Screen name="Login" component={LoginScreen} />
+      )}
+    </Stack.Navigator>
+  );
+};
+
+export default function App() {
+  return (
+    <SafeAreaProvider>
+      <AuthProvider>
+        <NavigationContainer>
+          <StatusBar style="light" />
+          <RootNavigator />
+        </NavigationContainer>
+      </AuthProvider>
+    </SafeAreaProvider>
+  );
+}

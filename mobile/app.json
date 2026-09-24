@@ -1,0 +1,24 @@
+{
+  "expo": {
+    "name": "Maqaayda Taysiir",
+    "slug": "maqaayda-taysiir",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#1F3A5F",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#1F3A5F"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.taysiirschools.canteen"
+    },
+    "android": {
+      "package": "com.taysiirschools.canteen",
+      "adaptiveIcon": {
+        "backgroundColor": "#1F3A5F"
+      }
+    }
+  }
+}
