@@ -14,6 +14,18 @@ import StaffParentDetailScreen from "../screens/staff/StaffParentDetailScreen";
 import StaffInvoicesScreen from "../screens/staff/StaffInvoicesScreen";
 import StaffExpensesScreen from "../screens/staff/StaffExpensesScreen";
 import StaffProfitLossScreen from "../screens/staff/StaffProfitLossScreen";
+import StaffClassesScreen from "../screens/staff/StaffClassesScreen";
+import StaffMealPlansScreen from "../screens/staff/StaffMealPlansScreen";
+import StaffFoodsScreen from "../screens/staff/StaffFoodsScreen";
+import StaffMenuScreen from "../screens/staff/StaffMenuScreen";
+import StaffHolidaysScreen from "../screens/staff/StaffHolidaysScreen";
+import StaffAcademicYearsScreen from "../screens/staff/StaffAcademicYearsScreen";
+import StaffUsersScreen from "../screens/staff/StaffUsersScreen";
+import StaffSettingsScreen from "../screens/staff/StaffSettingsScreen";
+import StaffAuditLogsScreen from "../screens/staff/StaffAuditLogsScreen";
+import StaffOutstandingBalancesScreen from "../screens/staff/StaffOutstandingBalancesScreen";
+import StaffMonthlyReportScreen from "../screens/staff/StaffMonthlyReportScreen";
+import StaffAnnualReportScreen from "../screens/staff/StaffAnnualReportScreen";
 import { COLORS } from "../utils/format";
 
 const Tab = createBottomTabNavigator();
@@ -49,6 +61,18 @@ const StaffNavigator = () => (
     <Stack.Screen name="Invoices" component={StaffInvoicesScreen} />
     <Stack.Screen name="Expenses" component={StaffExpensesScreen} />
     <Stack.Screen name="ProfitLoss" component={StaffProfitLossScreen} />
+    <Stack.Screen name="Classes" component={StaffClassesScreen} />
+    <Stack.Screen name="MealPlans" component={StaffMealPlansScreen} />
+    <Stack.Screen name="Foods" component={StaffFoodsScreen} />
+    <Stack.Screen name="Menu" component={StaffMenuScreen} />
+    <Stack.Screen name="Holidays" component={StaffHolidaysScreen} />
+    <Stack.Screen name="AcademicYears" component={StaffAcademicYearsScreen} />
+    <Stack.Screen name="Users" component={StaffUsersScreen} />
+    <Stack.Screen name="Settings" component={StaffSettingsScreen} />
+    <Stack.Screen name="AuditLogs" component={StaffAuditLogsScreen} />
+    <Stack.Screen name="OutstandingBalances" component={StaffOutstandingBalancesScreen} />
+    <Stack.Screen name="MonthlyReport" component={StaffMonthlyReportScreen} />
+    <Stack.Screen name="AnnualReport" component={StaffAnnualReportScreen} />
   </Stack.Navigator>
 );
 

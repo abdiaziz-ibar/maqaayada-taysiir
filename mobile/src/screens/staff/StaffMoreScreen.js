@@ -1,46 +1,94 @@
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
 import { StaffHeader } from "../../components/UI";
 import { COLORS } from "../../utils/format";
+import { useAuth } from "../../context/AuthContext";
 
-const GROUPS = [
-  {
-    title: "Ardayda & Waalidiinta",
-    items: [
-      { icon: "🎓", label: "Ardayda", route: "Students" },
-      { icon: "👥", label: "Waalidiinta", route: "Parents" },
-    ],
-  },
-  {
-    title: "Maaliyadda",
-    items: [
-      { icon: "🧾", label: "Invoices", route: "Invoices" },
-      { icon: "💳", label: "Kharashaadka", route: "Expenses" },
-      { icon: "📊", label: "Xisaab-xirka", route: "ProfitLoss" },
-    ],
-  },
-];
+const buildGroups = (staff) => {
+  const isAdmin = staff?.role === "admin";
+  const canFinance = isAdmin || staff?.canManageFinance;
 
-const StaffMoreScreen = ({ navigation }) => (
-  <View style={styles.flex}>
-    <StaffHeader title="Dheeri" />
-    <ScrollView contentContainerStyle={{ padding: 14, paddingBottom: 40 }}>
-      {GROUPS.map((g) => (
-        <View key={g.title} style={{ marginBottom: 14 }}>
-          <Text style={styles.group}>{g.title}</Text>
-          <View style={styles.card}>
-            {g.items.map((i, idx) => (
-              <TouchableOpacity key={i.route} style={[styles.row, idx > 0 && styles.rowBorder]} onPress={() => navigation.navigate(i.route)}>
-                <Text style={styles.icon}>{i.icon}</Text>
-                <Text style={styles.label}>{i.label}</Text>
-                <Text style={styles.chev}>›</Text>
-              </TouchableOpacity>
-            ))}
+  const groups = [
+    {
+      title: "Ardayda & Waalidiinta",
+      items: [
+        { icon: "🎓", label: "Ardayda", route: "Students" },
+        { icon: "👥", label: "Waalidiinta", route: "Parents" },
+      ],
+    },
+    {
+      title: "Maaliyadda",
+      items: [
+        { icon: "🧾", label: "Invoices", route: "Invoices" },
+        { icon: "💳", label: "Kharashaadka", route: "Expenses" },
+        { icon: "📊", label: "Xisaab-xirka", route: "ProfitLoss" },
+        { icon: "⚠️", label: "Deymaha", route: "OutstandingBalances" },
+      ],
+    },
+    {
+      title: "Nidaamka Cuntada",
+      items: [
+        { icon: "🏫", label: "Fasallada", route: "Classes" },
+        { icon: "🍱", label: "Meal Plans", route: "MealPlans" },
+        { icon: "🥗", label: "Cuntooyinka", route: "Foods" },
+        { icon: "📋", label: "Menu-ga", route: "Menu" },
+        { icon: "🏖️", label: "Fasaxyada", route: "Holidays" },
+        { icon: "📅", label: "Sannadaha Waxbarasho", route: "AcademicYears" },
+      ],
+    },
+    {
+      title: "Warbixinnada",
+      items: [
+        { icon: "📈", label: "Warbixin Bille", route: "MonthlyReport" },
+        { icon: "📆", label: "Warbixin Sannadeed", route: "AnnualReport" },
+      ],
+    },
+  ];
+
+  if (isAdmin) {
+    groups.push({
+      title: "Maamulka",
+      items: [
+        { icon: "🧑‍💼", label: "Isticmaalayaasha", route: "Users" },
+        { icon: "⚙️", label: "Settings", route: "Settings" },
+        { icon: "📜", label: "Audit Logs", route: "AuditLogs" },
+      ],
+    });
+  } else if (canFinance) {
+    groups.push({
+      title: "Maamulka",
+      items: [{ icon: "⚙️", label: "Settings", route: "Settings" }],
+    });
+  }
+
+  return groups;
+};
+
+const StaffMoreScreen = ({ navigation }) => {
+  const { staff } = useAuth();
+  const groups = buildGroups(staff);
+
+  return (
+    <View style={styles.flex}>
+      <StaffHeader title="Dheeri" />
+      <ScrollView contentContainerStyle={{ padding: 14, paddingBottom: 40 }}>
+        {groups.map((g) => (
+          <View key={g.title} style={{ marginBottom: 14 }}>
+            <Text style={styles.group}>{g.title}</Text>
+            <View style={styles.card}>
+              {g.items.map((i, idx) => (
+                <TouchableOpacity key={i.route} style={[styles.row, idx > 0 && styles.rowBorder]} onPress={() => navigation.navigate(i.route)}>
+                  <Text style={styles.icon}>{i.icon}</Text>
+                  <Text style={styles.label}>{i.label}</Text>
+                  <Text style={styles.chev}>›</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
-        </View>
-      ))}
-    </ScrollView>
-  </View>
-);
+        ))}
+      </ScrollView>
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: COLORS.paper },

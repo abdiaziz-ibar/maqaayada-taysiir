@@ -2,7 +2,9 @@ import { useCallback, useEffect, useState } from "react";
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from "react-native";
 import staffApi from "../../api/staffClient";
 import { ScreenHeader, ScreenModal, Field, PrimaryButton, ErrorText, Loading } from "../../components/UI";
+import ConfirmDeleteModal from "../../components/ConfirmDeleteModal";
 import { COLORS, formatMoney, formatDate, todayIso, monthLabel } from "../../utils/format";
+import { useAuth } from "../../context/AuthContext";
 
 const CATEGORY_SUGGESTIONS = ["Alaabta Cuntada", "Qalabka", "Korontada iyo Biyaha", "Mushaharka", "Gaadiidka", "Kale"];
 
@@ -48,9 +50,11 @@ const AddExpenseModal = ({ visible, onClose, onSaved }) => {
 };
 
 const StaffExpensesScreen = ({ navigation }) => {
+  const { staff } = useAuth();
   const now = new Date();
   const [expenses, setExpenses] = useState(null);
   const [showAdd, setShowAdd] = useState(false);
+  const [deleting, setDeleting] = useState(null);
 
   const load = useCallback(async () => {
     const res = await staffApi.get("/expenses", { params: { year: now.getFullYear(), month: now.getMonth() + 1 } });
@@ -87,13 +91,27 @@ const StaffExpensesScreen = ({ navigation }) => {
                 <Text style={styles.amount}>{formatMoney(e.amount)}</Text>
               </View>
               <Text style={styles.meta}>{e.description}</Text>
-              <Text style={styles.meta}>{formatDate(e.date)} · {e.paymentMethod}</Text>
+              <View style={styles.rowBetween}>
+                <Text style={styles.meta}>{formatDate(e.date)} · {e.paymentMethod}</Text>
+                {staff?.role === "admin" && (
+                  <TouchableOpacity onPress={() => setDeleting(e)}>
+                    <Text style={styles.deleteText}>Tirtir</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
             </View>
           )}
           ListEmptyComponent={<Text style={styles.empty}>Kharash lama diiwaan gelin bishan.</Text>}
         />
       )}
       <AddExpenseModal visible={showAdd} onClose={() => setShowAdd(false)} onSaved={load} />
+      <ConfirmDeleteModal
+        visible={!!deleting}
+        onClose={() => setDeleting(null)}
+        onConfirm={async () => { await staffApi.delete(`/expenses/${deleting.id}`); load(); }}
+        title="Tirtir Kharashka"
+        description={deleting ? `Ma hubtaa inaad tirtirayso "${deleting.description}"?` : ""}
+      />
     </View>
   );
 };
@@ -108,6 +126,7 @@ const styles = StyleSheet.create({
   category: { fontSize: 14, fontWeight: "600", color: COLORS.ink },
   amount: { fontSize: 14, fontWeight: "700", color: COLORS.danger },
   meta: { fontSize: 12, color: "rgba(20,24,33,0.55)", marginTop: 2 },
+  deleteText: { fontSize: 12, color: COLORS.danger },
   empty: { textAlign: "center", color: "rgba(20,24,33,0.4)", marginTop: 20 },
   suggestion: { backgroundColor: COLORS.paper, borderWidth: 1, borderColor: COLORS.line, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 },
   suggestionText: { fontSize: 12, color: COLORS.ink },
