@@ -121,7 +121,7 @@ const PaymentNew = () => {
 
           <div className="card space-y-3">
             <div className="flex justify-between text-lg"><span>Wadarta Lacagta</span><strong>{formatMoney(totalAmount)}</strong></div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="label-field">Habka Lacagta</label>
                 <select className="input-field" value={method} onChange={(e) => setMethod(e.target.value)}>

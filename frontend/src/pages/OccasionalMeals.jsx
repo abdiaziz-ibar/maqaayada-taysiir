@@ -89,7 +89,7 @@ const OccasionalMeals = () => {
               <span className="text-sm font-medium">{selectedStudent.fullName} ({selectedStudent.studentCode})</span>
               <button onClick={() => setSelectedStudent(null)} className="text-link text-sm hover:underline">Beddel</button>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="label-field">Nooca Cuntada</label>
                 <select className="input-field" value={mealType} onChange={(e) => setMealType(e.target.value)}>

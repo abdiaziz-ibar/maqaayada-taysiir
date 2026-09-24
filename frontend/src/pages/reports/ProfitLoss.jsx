@@ -3,14 +3,6 @@ import { TrendingUp, TrendingDown } from "lucide-react";
 import api from "../../api/axios";
 import { formatMoney, monthLabel } from "../../utils/format";
 
-const CATEGORY_LABELS = {
-  food_supplies: "Alaabta Cuntada",
-  equipment: "Qalabka",
-  utilities: "Korontada/Biyaha",
-  salary: "Mushaharka",
-  other: "Kale",
-};
-
 const ProfitLoss = () => {
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
@@ -74,7 +66,7 @@ const ProfitLoss = () => {
               <table className="table-base">
                 <tbody>
                   {Object.entries(data.expenses.byCategory).map(([cat, amt]) => (
-                    <tr key={cat}><td>{CATEGORY_LABELS[cat] || cat}</td><td className="text-right">{formatMoney(amt)}</td></tr>
+                    <tr key={cat}><td>{cat}</td><td className="text-right">{formatMoney(amt)}</td></tr>
                   ))}
                   {Object.keys(data.expenses.byCategory).length === 0 && (
                     <tr><td colSpan={2} className="text-center text-ink/40 py-3">Kharash lama diiwaan gelin bishan.</td></tr>

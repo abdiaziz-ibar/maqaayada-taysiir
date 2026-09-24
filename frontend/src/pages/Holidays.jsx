@@ -104,7 +104,7 @@ const AddAdjustmentForm = ({ holidays, mealPlans, onCreated }) => {
     <form onSubmit={submit} className="space-y-3">
       {error && <div className="bg-danger/10 text-danger text-sm rounded-md px-3 py-2">{error}</div>}
       {message && <div className="bg-success/10 text-success text-sm rounded-md px-3 py-2">{message}</div>}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div><label className="label-field">Bil</label>
           <select className="input-field" value={month} onChange={(e) => setMonth(e.target.value)}>
             {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => <option key={m} value={m}>{monthLabel(m)}</option>)}

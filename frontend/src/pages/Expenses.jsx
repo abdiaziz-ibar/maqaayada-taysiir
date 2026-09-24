@@ -5,17 +5,12 @@ import { formatMoney, formatDate, todayIso, monthLabel } from "../utils/format";
 import { useAuth } from "../context/AuthContext";
 import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
 
-const CATEGORIES = [
-  { value: "food_supplies", label: "Alaabta Cuntada" },
-  { value: "equipment", label: "Qalabka" },
-  { value: "utilities", label: "Korontada/Biyaha" },
-  { value: "salary", label: "Mushaharka" },
-  { value: "other", label: "Kale" },
-];
-const categoryLabel = (v) => CATEGORIES.find((c) => c.value === v)?.label || v;
+// Suggestions only — the field is free text, so staff can always type their
+// own category (e.g. "Korontada iyo Biyaha") instead of picking one of these.
+const CATEGORY_SUGGESTIONS = ["Alaabta Cuntada", "Qalabka", "Korontada iyo Biyaha", "Mushaharka", "Gaadiidka", "Kale"];
 
 const ExpenseModal = ({ open, onClose, onSaved, editing }) => {
-  const [category, setCategory] = useState("food_supplies");
+  const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState(todayIso());
@@ -30,7 +25,7 @@ const ExpenseModal = ({ open, onClose, onSaved, editing }) => {
       setCategory(editing.category); setDescription(editing.description); setAmount(String(editing.amount));
       setDate(editing.date.slice(0, 10)); setPaymentMethod(editing.paymentMethod || "Cash"); setNotes(editing.notes || "");
     } else {
-      setCategory("food_supplies"); setDescription(""); setAmount(""); setDate(todayIso()); setPaymentMethod("Cash"); setNotes("");
+      setCategory(""); setDescription(""); setAmount(""); setDate(todayIso()); setPaymentMethod("Cash"); setNotes("");
     }
   }, [open, editing]);
 
@@ -55,7 +50,7 @@ const ExpenseModal = ({ open, onClose, onSaved, editing }) => {
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-      <div className="bg-surface rounded-lg p-6 w-full max-w-sm">
+      <div className="bg-surface rounded-lg p-6 w-full max-w-sm max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg">{editing ? "Wax Ka Beddel Kharashka" : "Kharash Cusub"}</h2>
           <button onClick={onClose}><X size={18} /></button>
@@ -63,16 +58,24 @@ const ExpenseModal = ({ open, onClose, onSaved, editing }) => {
         <form onSubmit={handleSubmit} className="space-y-3">
           {error && <div className="bg-danger/10 text-danger text-sm rounded-md px-3 py-2">{error}</div>}
           <div>
-            <label className="label-field">Qaybta</label>
-            <select className="input-field" value={category} onChange={(e) => setCategory(e.target.value)}>
-              {CATEGORIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
-            </select>
+            <label className="label-field">Qaybta (dooro ama qor mid cusub)</label>
+            <input
+              className="input-field"
+              list="expense-categories"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              placeholder="tusaale: Korontada iyo Biyaha"
+              required
+            />
+            <datalist id="expense-categories">
+              {CATEGORY_SUGGESTIONS.map((c) => <option key={c} value={c} />)}
+            </datalist>
           </div>
           <div>
             <label className="label-field">Sharaxaad (adeegga/alaabta la iibsaday)</label>
             <input className="input-field" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="tusaale: Bariis 50kg, Shidaal, iwm" required />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div><label className="label-field">Qadarka Lacagta</label><input type="number" step="0.01" className="input-field" value={amount} onChange={(e) => setAmount(e.target.value)} required /></div>
             <div><label className="label-field">Taariikh</label><input type="date" className="input-field" value={date} onChange={(e) => setDate(e.target.value)} required /></div>
           </div>
@@ -117,7 +120,7 @@ const Expenses = () => {
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="text-2xl">Kharashaadka</h1>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <select className="input-field !w-auto" value={month} onChange={(e) => setMonth(Number(e.target.value))}>
             {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => <option key={m} value={m}>{monthLabel(m)}</option>)}
           </select>
@@ -140,7 +143,7 @@ const Expenses = () => {
             {expenses.map((e) => (
               <tr key={e.id}>
                 <td>{formatDate(e.date)}</td>
-                <td>{categoryLabel(e.category)}</td>
+                <td>{e.category}</td>
                 <td>{e.description}</td>
                 <td className="text-right">{formatMoney(e.amount)}</td>
                 <td>{e.paymentMethod || "-"}</td>

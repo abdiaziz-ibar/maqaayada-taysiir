@@ -101,7 +101,7 @@ const StudentModal = ({ open, onClose, onSaved, editing }) => {
             <label className="label-field">Magaca Ardayga</label>
             <input className="input-field" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="label-field">Jinsiga</label>
               <select className="input-field" value={gender} onChange={(e) => setGender(e.target.value)}>
@@ -115,7 +115,7 @@ const StudentModal = ({ open, onClose, onSaved, editing }) => {
               <input type="date" className="input-field" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="label-field">Fasalka</label>
               <select className="input-field" value={classId} onChange={(e) => { setClassId(e.target.value); setSectionId(""); }}>

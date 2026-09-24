@@ -46,7 +46,7 @@ const Sidebar = ({ open, onClose }) => {
       {open && <div className="fixed inset-0 bg-black/40 z-40 md:hidden print:hidden" onClick={onClose} />}
 
       <aside
-        className={`w-64 bg-gradient-to-b from-navy via-navy-light to-navy-dark flex flex-col shrink-0 print:hidden fixed inset-y-0 left-0 z-50 transform transition-transform duration-200 md:relative md:translate-x-0 md:z-auto relative overflow-hidden ${
+        className={`w-64 bg-gradient-to-b from-navy via-navy-light to-navy-dark flex flex-col shrink-0 print:hidden fixed inset-y-0 left-0 z-50 transform transition-transform duration-200 md:relative md:translate-x-0 md:z-auto overflow-hidden ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
