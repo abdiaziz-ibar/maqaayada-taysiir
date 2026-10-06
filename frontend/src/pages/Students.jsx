@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { Plus, Search, X, Pencil, Trash2 } from "lucide-react";
+import { Plus, Search, X, Pencil, Trash2, FileText } from "lucide-react";
 import api from "../api/axios";
 import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
 import { useAuth } from "../context/AuthContext";
+import { downloadWordTable } from "../utils/exportWord";
 
 const StudentModal = ({ open, onClose, onSaved, editing }) => {
   const [fullName, setFullName] = useState("");
@@ -197,6 +198,23 @@ const Students = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, classIdFilter]);
 
+  const exportWord = () => {
+    downloadWordTable({
+      title: "Liiska Ardayda",
+      headers: ["Code", "Magaca", "Fasalka", "Waalidka", "Telefoonka", "Meal Plan", "Xaalada"],
+      rows: students.map((s) => [
+        s.studentCode,
+        s.fullName,
+        `${s.class?.name || "-"}${s.section ? ` (${s.section.name})` : ""}`,
+        s.parent?.fullName,
+        s.parent?.phone,
+        s.mealPlan?.name || "Mar-mar oo kaliya",
+        s.status === "active" ? "Firfircoon" : "Aan Firfircoonayn",
+      ]),
+      fileName: "ardayda",
+    });
+  };
+
   const toggleStatus = async (student) => {
     await api.put(`/students/${student._id}`, { status: student.status === "active" ? "inactive" : "active" });
     load();
@@ -206,9 +224,14 @@ const Students = () => {
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="text-2xl">Ardayda</h1>
-        <button onClick={() => { setEditing(null); setShowAdd(true); }} className="btn-primary flex items-center gap-2">
-          <Plus size={16} /> Arday Cusub
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={exportWord} disabled={students.length === 0} className="btn-secondary flex items-center gap-2">
+            <FileText size={16} /> Word ga dhoh
+          </button>
+          <button onClick={() => { setEditing(null); setShowAdd(true); }} className="btn-primary flex items-center gap-2">
+            <Plus size={16} /> Arday Cusub
+          </button>
+        </div>
       </div>
 
       <div className="relative max-w-sm">
