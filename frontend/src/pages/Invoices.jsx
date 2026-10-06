@@ -9,6 +9,7 @@ import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
 const Invoices = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const canManageFinance = user?.role === "admin" || user?.canManageFinance;
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth() + 1);
@@ -18,6 +19,7 @@ const Invoices = () => {
   const [generating, setGenerating] = useState(false);
   const [message, setMessage] = useState("");
   const [deleting, setDeleting] = useState(null);
+  const [reversing, setReversing] = useState(null);
 
   const load = () => {
     setLoading(true);
@@ -74,6 +76,9 @@ const Invoices = () => {
                 <td>
                   <div className="flex items-center gap-3">
                     {i.status !== "paid" && <button onClick={() => navigate(`/payments/new?parentId=${i.student.parentId}`)} className="btn-secondary text-sm py-1.5 px-3">Bixi</button>}
+                    {canManageFinance && i.amountPaid > 0 && (
+                      <button onClick={() => setReversing(i)} className="text-link text-sm hover:underline">Ka noqo bixinta</button>
+                    )}
                     {user?.role === "admin" && i.amountPaid === 0 && (
                       <button onClick={() => setDeleting(i)} className="text-danger/70 hover:text-danger" title="Tirtir"><Trash2 size={15} /></button>
                     )}
@@ -92,6 +97,13 @@ const Invoices = () => {
         onConfirm={async () => { await api.delete(`/invoices/${deleting.id}`); load(); }}
         title="Tirtir Invoice-ka"
         description={deleting ? `Ma hubtaa inaad tirtirayso invoice-ka "${deleting.student.fullName}" ee ${monthLabel(deleting.month)} ${deleting.year}?` : ""}
+      />
+      <ConfirmDeleteModal
+        open={!!reversing}
+        onClose={() => setReversing(null)}
+        onConfirm={async () => { await api.post(`/invoices/${reversing.id}/reverse-payment`); load(); }}
+        title="Ka noqo bixinta"
+        description={reversing ? `Ma hubtaa inaad ka noqoto lacagta ${reversing.student.fullName} ee ${monthLabel(reversing.month)} ${reversing.year}? Invoice-ka wuxuu noqonayaa "Lama Bixin".` : ""}
       />
     </div>
   );
