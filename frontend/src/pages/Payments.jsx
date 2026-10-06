@@ -6,24 +6,32 @@ import { formatDate, formatMoney, monthLabel } from "../utils/format";
 import { useAuth } from "../context/AuthContext";
 import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
 
-const billingPeriod = (p) => {
-  const periods = p.allocations.map((a) => a.invoice.year * 12 + (a.invoice.month - 1));
-  return periods.length ? Math.min(...periods) : Number.MAX_SAFE_INTEGER;
-};
+const monthKey = (invoice) => invoice.year * 12 + (invoice.month - 1);
 
-const groupByBillingMonth = (payments) => {
+const monthName = (key) => `${monthLabel((key % 12) + 1)} ${Math.floor(key / 12)}`;
+
+const splitByBillingMonth = (payments) => {
   const groups = new Map();
-  for (const p of [...payments].sort((a, b) => new Date(b.paymentDate) - new Date(a.paymentDate))) {
-    const key = billingPeriod(p);
-    if (!groups.has(key)) groups.set(key, []);
-    groups.get(key).push(p);
+  const sorted = [...payments].sort((a, b) => new Date(b.paymentDate) - new Date(a.paymentDate));
+  for (const p of sorted) {
+    const byMonth = new Map();
+    for (const a of p.allocations) {
+      const key = monthKey(a.invoice);
+      if (!byMonth.has(key)) byMonth.set(key, []);
+      byMonth.get(key).push(a);
+    }
+    for (const [key, allocs] of byMonth) {
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push({
+        payment: p,
+        allocations: allocs,
+        amount: allocs.reduce((sum, a) => sum + a.amount, 0),
+      });
+    }
   }
   return [...groups.entries()]
     .sort(([a], [b]) => a - b)
-    .map(([key, items]) => ({
-      label: key === Number.MAX_SAFE_INTEGER ? "-" : `${monthLabel((key % 12) + 1)} ${Math.floor(key / 12)}`,
-      items,
-    }));
+    .map(([key, items]) => ({ label: monthName(key), items }));
 };
 
 const Payments = () => {
@@ -47,18 +55,18 @@ const Payments = () => {
         <table className="table-base">
           <thead><tr><th>Receipt</th><th>Taariikh</th><th>Waalid</th><th>Arday(da)</th><th className="text-right">Lacag</th><th>Habka</th><th></th></tr></thead>
           <tbody>
-            {groupByBillingMonth(payments).map((group) => (
+            {splitByBillingMonth(payments).map((group) => (
               <Fragment key={group.label}>
               <tr className="bg-paper">
                 <td colSpan={7} className="font-semibold text-ink/70">{group.label}</td>
               </tr>
-              {group.items.map((p) => (
-              <tr key={p.id}>
+              {group.items.map(({ payment: p, allocations, amount }) => (
+              <tr key={`${p.id}-${group.label}`}>
                 <td>{p.receiptNumber}</td>
                 <td>{formatDate(p.paymentDate)}</td>
                 <td>{p.parent?.fullName || "-"}</td>
-                <td>{p.allocations.map((a) => `${a.invoice.student.fullName} (${monthLabel(a.invoice.month)})`).join(", ")}</td>
-                <td className="text-right">{formatMoney(p.amount)}</td>
+                <td>{allocations.map((a) => `${a.invoice.student.fullName} (${monthLabel(a.invoice.month)})`).join(", ")}</td>
+                <td className="text-right">{formatMoney(amount)}</td>
                 <td>{p.method}</td>
                 <td>
                   <div className="flex items-center gap-3">
