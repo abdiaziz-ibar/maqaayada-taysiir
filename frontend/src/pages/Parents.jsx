@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Search, X, Pencil, Trash2 } from "lucide-react";
+import { Plus, Search, X, Pencil, Trash2, FileText } from "lucide-react";
 import api from "../api/axios";
 import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
 import { useAuth } from "../context/AuthContext";
+import { downloadWordTable } from "../utils/exportWord";
 
 const ParentModal = ({ open, onClose, onSaved, editing }) => {
   const [fullName, setFullName] = useState("");
@@ -96,6 +97,21 @@ const Parents = () => {
     api.get("/parents", { params: search ? { search } : {} }).then((res) => setParents(res.data.parents)).finally(() => setLoading(false));
   };
 
+  const exportWord = () => {
+    downloadWordTable({
+      title: "Liiska Waalidiinta",
+      headers: ["Code", "Magaca", "Telefoonka", "Ardayda", "Xaalada"],
+      rows: parents.map((p) => [
+        p.parentCode,
+        p.fullName,
+        p.phone,
+        p.students?.map((s) => s.fullName).join(", ") || "-",
+        p.status === "active" ? "Firfircoon" : "Aan Firfircoonayn",
+      ]),
+      fileName: "waalidiinta",
+    });
+  };
+
   useEffect(() => {
     const t = setTimeout(load, 250);
     return () => clearTimeout(t);
@@ -106,9 +122,14 @@ const Parents = () => {
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="text-2xl">Waalidiinta</h1>
-        <button onClick={() => { setEditing(null); setShowAdd(true); }} className="btn-primary flex items-center gap-2">
-          <Plus size={16} /> Waalid Cusub
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={exportWord} disabled={parents.length === 0} className="btn-secondary flex items-center gap-2">
+            <FileText size={16} /> Word ga dhoh
+          </button>
+          <button onClick={() => { setEditing(null); setShowAdd(true); }} className="btn-primary flex items-center gap-2">
+            <Plus size={16} /> Waalid Cusub
+          </button>
+        </div>
       </div>
 
       <div className="relative max-w-sm">
