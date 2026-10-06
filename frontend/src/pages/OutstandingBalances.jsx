@@ -2,18 +2,24 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Download } from "lucide-react";
 import api from "../api/axios";
-import { formatMoney, exportToExcel } from "../utils/format";
+import { formatMoney, exportToExcel, monthLabel } from "../utils/format";
+
+const currentYear = new Date().getFullYear();
+const YEARS = [currentYear - 1, currentYear, currentYear + 1];
 
 const OutstandingBalances = () => {
   const navigate = useNavigate();
   const [status, setStatus] = useState("all");
+  const [month, setMonth] = useState("");
+  const [year, setYear] = useState(currentYear);
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
-    api.get("/reports/outstanding-balances", { params: { status } }).then((res) => setRows(res.data.rows)).finally(() => setLoading(false));
-  }, [status]);
+    const params = { status, ...(month ? { year, month } : {}) };
+    api.get("/reports/outstanding-balances", { params }).then((res) => setRows(res.data.rows)).finally(() => setLoading(false));
+  }, [status, month, year]);
 
   const doExport = () => {
     exportToExcel(
@@ -35,6 +41,17 @@ const OutstandingBalances = () => {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="text-2xl">Deymaha (Outstanding Balances)</h1>
         <div className="flex items-center gap-2">
+          <select className="input-field !w-auto" value={month} onChange={(e) => setMonth(e.target.value)}>
+            <option value="">Dhammaan Bilaha</option>
+            {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+              <option key={m} value={m}>{monthLabel(m)}</option>
+            ))}
+          </select>
+          {month && (
+            <select className="input-field !w-auto" value={year} onChange={(e) => setYear(Number(e.target.value))}>
+              {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
+            </select>
+          )}
           <select className="input-field !w-auto" value={status} onChange={(e) => setStatus(e.target.value)}>
             <option value="all">Dhammaan</option>
             <option value="overdue">Overdue</option>

@@ -6,13 +6,17 @@ const { serializeParent } = require("../utils/serialize");
 const outstandingBalances = async (req, res, next) => {
   try {
     const { status } = req.query;
+    const year = Number(req.query.year);
+    const month = Number(req.query.month);
+    const inPeriod = (i) => (!year || i.year === year) && (!month || i.month === month);
     const parents = await prisma.parent.findMany({
       include: { students: { include: { invoices: true } } },
     });
 
     const rows = parents
       .map((p) => {
-        const invoices = p.students.flatMap((s) => s.invoices);
+        const studentsInPeriod = p.students.filter((s) => s.invoices.some(inPeriod));
+        const invoices = p.students.flatMap((s) => s.invoices).filter(inPeriod);
         const unpaid = invoices.filter((i) => i.status !== "paid");
         const totalDue = invoices.reduce((sum, i) => sum + i.amountDue, 0);
         const totalPaid = invoices.reduce((sum, i) => sum + i.amountPaid, 0);
@@ -20,7 +24,7 @@ const outstandingBalances = async (req, res, next) => {
         const oldest = unpaid.sort((a, b) => a.year - b.year || a.month - b.month)[0];
         return {
           parent: serializeParent(p),
-          childrenCount: p.students.length,
+          childrenCount: studentsInPeriod.length,
           totalDue,
           totalPaid,
           outstanding,
