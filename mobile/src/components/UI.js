@@ -89,7 +89,7 @@ export const PrimaryButton = ({ title, onPress, loading, disabled, color }) => (
     onPress={onPress}
     disabled={disabled || loading}
   >
-    {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.primaryBtnText}>{title}</Text>}
+    {loading ? <ActivityIndicator color={COLORS.ink} /> : <Text style={styles.primaryBtnText}>{title}</Text>}
   </TouchableOpacity>
 );
 
@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surface,
   },
   primaryBtn: { backgroundColor: COLORS.brand, borderRadius: 999, paddingVertical: 13, alignItems: "center", marginTop: 20 },
-  primaryBtnText: { color: "#fff", fontWeight: "700", fontSize: 15 },
+  primaryBtnText: { color: COLORS.ink, fontWeight: "700", fontSize: 15 },
   errorText: { backgroundColor: "rgba(179,64,42,0.1)", color: COLORS.danger, padding: 10, borderRadius: 8, marginBottom: 10, fontSize: 13 },
   successText: { backgroundColor: "rgba(47,122,77,0.1)", color: COLORS.success, padding: 10, borderRadius: 8, marginBottom: 10, fontSize: 13 },
   card: { backgroundColor: COLORS.surface, borderRadius: 12, padding: 14, marginBottom: 12, borderWidth: 1, borderColor: COLORS.line },

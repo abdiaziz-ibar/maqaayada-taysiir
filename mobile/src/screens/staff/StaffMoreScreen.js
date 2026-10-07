@@ -1,6 +1,6 @@
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
 import { StaffHeader } from "../../components/UI";
-import { COLORS } from "../../utils/format";
+import { COLORS, TILE_COLORS } from "../../utils/format";
 import { useAuth } from "../../context/AuthContext";
 
 const buildGroups = (staff) => {
@@ -32,7 +32,7 @@ const buildGroups = (staff) => {
         { icon: "🥗", label: "Cuntooyinka", route: "Foods" },
         { icon: "📋", label: "Menu-ga", route: "Menu" },
         { icon: "🏖️", label: "Fasaxyada", route: "Holidays" },
-        { icon: "📅", label: "Sannadaha Waxbarasho", route: "AcademicYears" },
+        { icon: "📅", label: "Sannadaha", route: "AcademicYears" },
       ],
     },
     {
@@ -66,22 +66,28 @@ const buildGroups = (staff) => {
 const StaffMoreScreen = ({ navigation }) => {
   const { staff } = useAuth();
   const groups = buildGroups(staff);
+  let tileIndex = 0;
 
   return (
     <View style={styles.flex}>
       <StaffHeader title="Dheeri" />
       <ScrollView contentContainerStyle={{ padding: 14, paddingBottom: 40 }}>
         {groups.map((g) => (
-          <View key={g.title} style={{ marginBottom: 14 }}>
+          <View key={g.title} style={{ marginBottom: 20 }}>
             <Text style={styles.group}>{g.title}</Text>
-            <View style={styles.card}>
-              {g.items.map((i, idx) => (
-                <TouchableOpacity key={i.route} style={[styles.row, idx > 0 && styles.rowBorder]} onPress={() => navigation.navigate(i.route)}>
-                  <Text style={styles.icon}>{i.icon}</Text>
-                  <Text style={styles.label}>{i.label}</Text>
-                  <Text style={styles.chev}>›</Text>
-                </TouchableOpacity>
-              ))}
+            <View style={styles.grid}>
+              {g.items.map((i) => {
+                const palette = TILE_COLORS[tileIndex % TILE_COLORS.length];
+                tileIndex += 1;
+                return (
+                  <TouchableOpacity key={i.route} style={styles.tile} onPress={() => navigation.navigate(i.route)}>
+                    <View style={[styles.iconBox, { backgroundColor: palette.bg }]}>
+                      <Text style={styles.iconText}>{i.icon}</Text>
+                    </View>
+                    <Text style={styles.tileLabel} numberOfLines={2}>{i.label}</Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           </View>
         ))}
@@ -92,13 +98,19 @@ const StaffMoreScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: COLORS.paper },
-  group: { fontSize: 12, color: "rgba(20,24,33,0.5)", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6, marginLeft: 4 },
-  card: { backgroundColor: COLORS.surface, borderRadius: 12, borderWidth: 1, borderColor: COLORS.line, overflow: "hidden" },
-  row: { flexDirection: "row", alignItems: "center", paddingHorizontal: 14, paddingVertical: 14 },
-  rowBorder: { borderTopWidth: 1, borderTopColor: COLORS.line },
-  icon: { fontSize: 18, width: 30 },
-  label: { flex: 1, fontSize: 15, color: COLORS.ink },
-  chev: { fontSize: 20, color: "rgba(20,24,33,0.3)" },
+  group: { fontSize: 13, fontWeight: "700", color: COLORS.ink, marginBottom: 12 },
+  grid: { flexDirection: "row", flexWrap: "wrap", gap: 14 },
+  tile: { width: "22%", alignItems: "center" },
+  iconBox: {
+    width: "100%",
+    aspectRatio: 1,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 6,
+  },
+  iconText: { fontSize: 24 },
+  tileLabel: { fontSize: 11, color: COLORS.ink, textAlign: "center", fontWeight: "500" },
 });
 
 export default StaffMoreScreen;

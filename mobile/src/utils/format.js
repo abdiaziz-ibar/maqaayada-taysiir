@@ -1,17 +1,26 @@
 export const COLORS = {
-  navy: "#1F3A5F",
-  navyLight: "#2E5386",
-  navyDark: "#152943",
-  amber: "#C98A2C",
-  brand: "#2F7A4D",
-  brandDark: "#1F5934",
+  navy: "#0E1318",
+  navyLight: "#1C2530",
+  navyDark: "#07090C",
+  amber: "#FF8E28",
+  brand: "#FF8E28",
+  brandDark: "#E67A12",
   success: "#2F7A4D",
-  danger: "#B3402A",
-  paper: "#FAFAF9",
+  danger: "#C2412D",
+  paper: "#F7F4EF",
   surface: "#FFFFFF",
-  ink: "#14181F",
-  line: "#E7E5E0",
+  ink: "#0E1318",
+  line: "#ECE6DD",
 };
+
+export const TILE_COLORS = [
+  { bg: "#DDF3E4", fg: "#1F7A4D" },
+  { bg: "#FFEAD9", fg: "#C2410C" },
+  { bg: "#DCEBFB", fg: "#1D4ED8" },
+  { bg: "#F1E4FB", fg: "#7C3AED" },
+  { bg: "#FCE4E4", fg: "#C2412D" },
+  { bg: "#FFF1D6", fg: "#B45309" },
+];
 
 export const formatMoney = (n) =>
   `$${Number(n || 0).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
