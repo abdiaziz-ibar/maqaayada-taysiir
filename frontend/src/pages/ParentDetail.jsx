@@ -33,9 +33,9 @@ const ParentDetail = () => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="card"><p className="text-xs text-ink/50 uppercase">Wadarta Lacagta Bishii</p><p className="text-2xl font-serif">{formatMoney(financialSummary.totalMonthlyFees)}</p></div>
-        <div className="card"><p className="text-xs text-ink/50 uppercase">La Bixiyey</p><p className="text-2xl font-serif text-success">{formatMoney(financialSummary.totalPaid)}</p></div>
-        <div className="card"><p className="text-xs text-ink/50 uppercase">La Sugayo</p><p className="text-2xl font-serif text-danger">{formatMoney(financialSummary.totalOutstanding)}</p></div>
+        <div className="card"><p className="text-xs text-ink/50 uppercase">Wadarta Lacagta Bishii</p><p className="text-2xl font-display">{formatMoney(financialSummary.totalMonthlyFees)}</p></div>
+        <div className="card"><p className="text-xs text-ink/50 uppercase">La Bixiyey</p><p className="text-2xl font-display text-success">{formatMoney(financialSummary.totalPaid)}</p></div>
+        <div className="card"><p className="text-xs text-ink/50 uppercase">La Sugayo</p><p className="text-2xl font-display text-danger">{formatMoney(financialSummary.totalOutstanding)}</p></div>
       </div>
 
       <div className="card overflow-x-auto">

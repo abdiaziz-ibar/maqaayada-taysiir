@@ -148,7 +148,7 @@ const Classes = () => {
         {classes.map((c) => (
           <div key={c.id} className="card">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="font-serif text-lg">{c.name}</h3>
+              <h3 className="font-display text-lg">{c.name}</h3>
               <div className="flex items-center gap-2">
                 <span className={`badge ${c.isActive ? "badge-paid" : "badge-unpaid"}`}>{c.isActive ? "Firfircoon" : "Xiran"}</span>
                 {canManage && (

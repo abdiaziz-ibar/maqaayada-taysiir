@@ -32,18 +32,18 @@ const ProfitLoss = () => {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="card">
               <p className="text-xs text-ink/50 uppercase">Wadarta Dakhliga (Income)</p>
-              <p className="text-2xl font-serif text-success">{formatMoney(data.income.total)}</p>
+              <p className="text-2xl font-display text-success">{formatMoney(data.income.total)}</p>
             </div>
             <div className="card">
               <p className="text-xs text-ink/50 uppercase">Wadarta Kharashka (Expenses)</p>
-              <p className="text-2xl font-serif text-danger">{formatMoney(data.expenses.total)}</p>
+              <p className="text-2xl font-display text-danger">{formatMoney(data.expenses.total)}</p>
             </div>
             <div className={`card border-2 ${data.isLoss ? "border-danger" : "border-success"}`}>
               <p className="text-xs text-ink/50 uppercase flex items-center gap-1.5">
                 {data.isLoss ? <TrendingDown size={14} className="text-danger" /> : <TrendingUp size={14} className="text-success" />}
                 Farqiga (Net)
               </p>
-              <p className={`text-2xl font-serif ${data.isLoss ? "text-danger" : "text-success"}`}>{formatMoney(data.net)}</p>
+              <p className={`text-2xl font-display ${data.isLoss ? "text-danger" : "text-success"}`}>{formatMoney(data.net)}</p>
               <p className={`text-xs mt-1 ${data.isLoss ? "text-danger" : "text-success"}`}>
                 {data.isLoss ? "⚠ Qasaaro ayaa jira bishan (Loss)" : "✓ Faa'iido ayaa jira bishan (Profit)"}
               </p>

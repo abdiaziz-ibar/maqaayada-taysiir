@@ -47,10 +47,10 @@ const StudentDetail = () => {
         <div className="card">
           <h2 className="text-lg mb-3">Falanqaynta Cuntada</h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
-            <div><p className="text-ink/50">La Filayay</p><p className="text-xl font-serif">{history.summary.totalExpected}</p></div>
-            <div><p className="text-ink/50">Wuu Cunay</p><p className="text-xl font-serif text-success">{history.summary.totalEaten}</p></div>
-            <div><p className="text-ink/50">Ma Cunin</p><p className="text-xl font-serif text-danger">{history.summary.totalMissed}</p></div>
-            <div><p className="text-ink/50">Boqolkiiba</p><p className="text-xl font-serif">{history.summary.attendancePercentage}%</p></div>
+            <div><p className="text-ink/50">La Filayay</p><p className="text-xl font-display">{history.summary.totalExpected}</p></div>
+            <div><p className="text-ink/50">Wuu Cunay</p><p className="text-xl font-display text-success">{history.summary.totalEaten}</p></div>
+            <div><p className="text-ink/50">Ma Cunin</p><p className="text-xl font-display text-danger">{history.summary.totalMissed}</p></div>
+            <div><p className="text-ink/50">Boqolkiiba</p><p className="text-xl font-display">{history.summary.attendancePercentage}%</p></div>
           </div>
         </div>
       )}

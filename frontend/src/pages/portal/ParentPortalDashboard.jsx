@@ -13,7 +13,7 @@ const StatCard = ({ label, value, icon: Icon, iconBg, iconColor, accent }) => (
         <Icon size={16} className={iconColor} />
       </span>
     </div>
-    <p className={`text-2xl font-serif ${accent || ""}`}>{value}</p>
+    <p className={`text-2xl font-display ${accent || ""}`}>{value}</p>
   </div>
 );
 
@@ -42,9 +42,9 @@ const ParentPortalDashboard = () => {
     <div className="min-h-screen bg-paper">
       <header className="bg-navy-dark px-6 py-5 flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-500 to-amber-500 flex items-center justify-center text-white font-serif font-bold text-sm shrink-0 shadow-sm">TS</div>
+          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-brand to-brand-dark flex items-center justify-center text-white font-display font-bold text-sm shrink-0 shadow-sm">TS</div>
           <div>
-            <h1 className="font-serif text-lg text-white leading-tight">Taysiir International Schools</h1>
+            <h1 className="font-display text-lg text-white leading-tight">Taysiir International Schools</h1>
             <p className="text-white/50 text-xs mt-0.5">Xisaabta Waalidka — Maqaayda</p>
           </div>
         </div>
@@ -64,7 +64,7 @@ const ParentPortalDashboard = () => {
       <main className="max-w-4xl mx-auto p-6 space-y-6">
         <div className="card bg-gradient-to-br from-navy to-navy-light text-white border-0">
           <p className="text-white/60 text-sm">Salaan,</p>
-          <h2 className="font-serif text-2xl">{parent.fullName}</h2>
+          <h2 className="font-display text-2xl">{parent.fullName}</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -79,7 +79,7 @@ const ParentPortalDashboard = () => {
               <div key={s.id} className="card">
                 <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
                   <div>
-                    <h3 className="font-serif text-lg">{s.fullName}</h3>
+                    <h3 className="font-display text-lg">{s.fullName}</h3>
                     <p className="text-xs text-ink/50">{s.studentCode} {s.class ? `· ${s.class.name}` : ""} {s.mealPlan ? `· ${s.mealPlan.name}` : "· Mar-mar oo kaliya"}</p>
                   </div>
                   <div className="flex items-center gap-3">

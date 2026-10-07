@@ -13,7 +13,7 @@ const StatCard = ({ label, value, icon: Icon, iconBg, iconColor }) => (
         <Icon size={16} className={iconColor} />
       </span>
     </div>
-    <p className="text-2xl font-serif">{value}</p>
+    <p className="text-2xl font-display">{value}</p>
   </div>
 );
 

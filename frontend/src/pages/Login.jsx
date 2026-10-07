@@ -13,10 +13,10 @@ const FEATURES = [
 
 const Logo = ({ light }) => (
   <div className="flex items-center gap-2.5">
-    <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500 to-amber-500 flex items-center justify-center text-white font-serif font-bold text-sm shrink-0 shadow-sm">
+    <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-brand to-brand-dark flex items-center justify-center text-white font-display font-bold text-sm shrink-0 shadow-sm">
       MT
     </div>
-    <span className={`font-serif text-lg ${light ? "text-white" : "text-ink"}`}>Maqaayda Taysiir</span>
+    <span className={`font-display text-lg ${light ? "text-white" : "text-ink"}`}>Maqaayda Taysiir</span>
   </div>
 );
 
@@ -251,7 +251,7 @@ const Login = () => {
             TAYSIIR INTERNATIONAL SCHOOL CANTEEN
           </span>
 
-          <h1 className="font-serif text-4xl lg:text-5xl font-bold leading-tight mt-5">
+          <h1 className="font-display text-4xl lg:text-5xl font-bold leading-tight mt-5">
             Cuntada ardayda,
             <br />
             si fudud u maamul.
@@ -319,7 +319,7 @@ const Login = () => {
             </div>
           )}
 
-          <h2 className="font-serif text-2xl">Ku Soo Dhawoow</h2>
+          <h2 className="font-display text-2xl">Ku Soo Dhawoow</h2>
           <p className="text-sm text-ink/50 mt-1 mb-6">
             {mode === "staff" ? "Gal xisaabtaada si aad u sii wadato." : "Gal xisaabta waalidnimo si aad u aragto xogta ardaygaaga."}
           </p>

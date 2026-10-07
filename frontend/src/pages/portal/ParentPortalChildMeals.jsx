@@ -24,7 +24,7 @@ const ParentPortalChildMeals = () => {
       <header className="bg-navy-dark px-6 py-5 flex items-center gap-3">
         <button onClick={() => navigate("/portal/dashboard")} className="text-white/80 hover:text-white"><ArrowLeft size={20} /></button>
         <div>
-          <h1 className="font-serif text-lg text-white leading-tight">{student.fullName}</h1>
+          <h1 className="font-display text-lg text-white leading-tight">{student.fullName}</h1>
           <p className="text-white/50 text-xs mt-0.5">Taariikhda Cuntada</p>
         </div>
       </header>

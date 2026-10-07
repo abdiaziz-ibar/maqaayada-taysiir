@@ -53,11 +53,11 @@ const Sidebar = ({ open, onClose }) => {
         <div className="absolute -top-20 -right-20 w-56 h-56 rounded-full bg-white/5 pointer-events-none" />
 
         <div className="relative px-5 py-6 border-b border-white/10 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-500 to-amber-500 flex items-center justify-center text-white font-serif font-bold text-sm shrink-0 shadow-sm">
+          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-brand to-brand-dark flex items-center justify-center text-white font-display font-bold text-sm shrink-0 shadow-sm">
             TS
           </div>
           <div className="min-w-0 flex-1">
-            <h1 className="text-white font-serif text-lg leading-tight truncate">Taysiir KM13</h1>
+            <h1 className="text-white font-display text-lg leading-tight truncate">Taysiir KM13</h1>
             <p className="text-white/50 text-xs mt-0.5 truncate">Restaurant &amp; Meal System</p>
           </div>
           <button onClick={onClose} className="md:hidden text-white/60 hover:text-white shrink-0">

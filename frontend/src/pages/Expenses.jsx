@@ -133,7 +133,7 @@ const Expenses = () => {
 
       <div className="card">
         <p className="text-xs text-ink/50 uppercase">Wadarta Kharashka Bishan</p>
-        <p className="text-2xl font-serif text-danger">{formatMoney(total)}</p>
+        <p className="text-2xl font-display text-danger">{formatMoney(total)}</p>
       </div>
 
       <div className="card overflow-x-auto">

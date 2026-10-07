@@ -26,7 +26,7 @@ const Receipt = () => {
 
       <div className="card space-y-4">
         <div className="text-center border-b border-line pb-4">
-          <h1 className="font-serif text-xl">Taysiir International Schools</h1>
+          <h1 className="font-display text-xl">Taysiir International Schools</h1>
           <p className="text-sm text-ink/60">School Restaurant Payment Receipt</p>
         </div>
 
