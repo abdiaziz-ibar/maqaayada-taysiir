@@ -108,6 +108,28 @@ const Users = () => {
         <button onClick={() => { setEditing(null); setShowAdd(true); }} className="btn-primary flex items-center gap-2"><Plus size={16} /> Isticmaale Cusub</button>
       </div>
 
+      <div className="card">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="font-display font-semibold">Akoonno Xiran (password khaldan)</h2>
+          <button onClick={load} className="text-link text-sm hover:underline">Cusboonaysii</button>
+        </div>
+        {users.filter((u) => u.lockedAt).length === 0 ? (
+          <p className="text-ink/40 text-sm">Ma jiro akoon xiran hadda.</p>
+        ) : (
+          <div className="divide-y divide-line">
+            {users.filter((u) => u.lockedAt).map((u) => (
+              <div key={u._id} className="flex items-center justify-between py-2">
+                <div>
+                  <p className="font-medium">{u.fullName}</p>
+                  <p className="text-ink/50 text-sm">{u.username}</p>
+                </div>
+                <button onClick={() => unlock(u)} className="btn-secondary text-sm py-1.5 px-3">Ka qaad Block-ka</button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       <div className="card overflow-x-auto">
         <table className="table-base">
           <thead><tr><th>Magaca</th><th>Username</th><th>Doorka</th><th>Maaliyad</th><th>Xaalada</th><th>Login</th><th></th></tr></thead>
