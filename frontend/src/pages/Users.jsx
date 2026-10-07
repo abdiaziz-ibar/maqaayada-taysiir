@@ -96,6 +96,11 @@ const Users = () => {
     load();
   };
 
+  const unlock = async (u) => {
+    await api.post(`/users/${u._id}/unlock`);
+    load();
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
@@ -105,7 +110,7 @@ const Users = () => {
 
       <div className="card overflow-x-auto">
         <table className="table-base">
-          <thead><tr><th>Magaca</th><th>Username</th><th>Doorka</th><th>Maaliyad</th><th>Xaalada</th><th></th></tr></thead>
+          <thead><tr><th>Magaca</th><th>Username</th><th>Doorka</th><th>Maaliyad</th><th>Xaalada</th><th>Login</th><th></th></tr></thead>
           <tbody>
             {users.map((u) => (
               <tr key={u._id}>
@@ -120,6 +125,13 @@ const Users = () => {
                   )}
                 </td>
                 <td><span className={`badge ${u.status === "active" ? "badge-paid" : "badge-unpaid"}`}>{u.status === "active" ? "Firfircoon" : "Xiran"}</span></td>
+                <td>
+                  {u.lockedAt ? (
+                    <button onClick={() => unlock(u)} className="badge badge-unpaid hover:opacity-80" title="Riix si aad u furto">🔒 Block — Ka qaad</button>
+                  ) : (
+                    <span className="text-ink/30 text-sm">—</span>
+                  )}
+                </td>
                 <td>
                   <div className="flex items-center gap-3">
                     <button onClick={() => toggleStatus(u)} className="text-link text-sm hover:underline">{u.status === "active" ? "Xir" : "Furan"}</button>

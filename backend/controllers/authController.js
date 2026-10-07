@@ -4,6 +4,9 @@ const { generateToken } = require("../utils/generateToken");
 const { serializeUser } = require("../utils/serialize");
 const { getLockRemaining, failureResult, reset, lockedMessage } = require("../utils/loginLimiter");
 
+const MAX_FAILED_LOGINS = 3;
+const ACCOUNT_LOCKED_MESSAGE = "Xisaabtan waa la block gareeyay sababtoo ah isku day badan oo khalad ah. La xiriir admin-ka si laguugu furo.";
+
 // POST /api/auth/login
 const login = async (req, res, next) => {
   try {
@@ -11,16 +14,29 @@ const login = async (req, res, next) => {
     if (!username || !password) {
       return res.status(400).json({ message: "Fadlan geli username iyo password." });
     }
-    const lockedFor = getLockRemaining("staff", username);
-    if (lockedFor > 0) return res.status(429).json({ message: lockedMessage(lockedFor) });
 
     const user = await prisma.user.findUnique({ where: { username: username.toLowerCase() } });
+    if (user?.lockedAt) {
+      return res.status(423).json({ message: ACCOUNT_LOCKED_MESSAGE });
+    }
+
     const isMatch = user && user.status === "active" && (await bcrypt.compare(password, user.password));
     if (!isMatch) {
-      const { status, message } = failureResult("staff", username, "Username ama password khalad ah.");
-      return res.status(status).json({ message });
+      if (user) {
+        const failedLoginCount = user.failedLoginCount + 1;
+        const lockingNow = failedLoginCount >= MAX_FAILED_LOGINS;
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { failedLoginCount, ...(lockingNow ? { lockedAt: new Date() } : {}) },
+        });
+        if (lockingNow) return res.status(423).json({ message: ACCOUNT_LOCKED_MESSAGE });
+      }
+      return res.status(401).json({ message: "Username ama password khalad ah." });
     }
-    reset("staff", username);
+
+    if (user.failedLoginCount > 0) {
+      await prisma.user.update({ where: { id: user.id }, data: { failedLoginCount: 0 } });
+    }
     const token = generateToken(user.id);
     res.json({ token, user: serializeUser(user) });
   } catch (err) {

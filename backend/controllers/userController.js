@@ -86,4 +86,19 @@ const deleteUser = async (req, res, next) => {
   }
 };
 
-module.exports = { listUsers, createUser, updateUser, deleteUser };
+// POST /api/users/:id/unlock — admin clears a lockout from too many failed logins
+const unlockUser = async (req, res, next) => {
+  try {
+    const before = await prisma.user.findUnique({ where: { id: req.params.id } });
+    if (!before) return res.status(404).json({ message: "Isticmaalaha lama helin." });
+    if (!before.lockedAt) return res.status(400).json({ message: "Isticmaalahan ma ahan mid la block gareeyay." });
+
+    const user = await prisma.user.update({ where: { id: req.params.id }, data: { lockedAt: null, failedLoginCount: 0 } });
+    logAudit(prisma, { userId: req.user._id, action: "unlock", module: "users", recordId: user.id, previousValue: serializeUser(before), newValue: serializeUser(user) });
+    res.json({ user: serializeUser(user) });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { listUsers, createUser, updateUser, deleteUser, unlockUser };

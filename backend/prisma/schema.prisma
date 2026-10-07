@@ -15,6 +15,8 @@ model User {
   role             String   @default("staff") // "admin" | "staff"
   canManageFinance Boolean  @default(false) // staff-only gate; admins always pass
   status           String   @default("active") // "active" | "inactive"
+  failedLoginCount Int      @default(0)
+  lockedAt         DateTime? // set after too many failed logins; cleared only by an admin unlock
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
