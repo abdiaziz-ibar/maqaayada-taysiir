@@ -19,6 +19,13 @@ const login = async (req, res, next) => {
     if (user?.lockedAt) {
       return res.status(423).json({ message: ACCOUNT_LOCKED_MESSAGE });
     }
+    // Usernames that don't match any account can't carry a lock on a User
+    // row, so throttle them separately (short, auto-expiring) to stop
+    // someone from brute-forcing random usernames.
+    if (!user) {
+      const lockedFor = getLockRemaining("login-guess", username.toLowerCase());
+      if (lockedFor > 0) return res.status(429).json({ message: lockedMessage(lockedFor) });
+    }
 
     const isMatch = user && user.status === "active" && (await bcrypt.compare(password, user.password));
     if (!isMatch) {
@@ -30,6 +37,9 @@ const login = async (req, res, next) => {
           data: { failedLoginCount, ...(lockingNow ? { lockedAt: new Date() } : {}) },
         });
         if (lockingNow) return res.status(423).json({ message: ACCOUNT_LOCKED_MESSAGE });
+      } else {
+        const { status, message } = failureResult("login-guess", username.toLowerCase(), "Username ama password khalad ah.");
+        return res.status(status).json({ message });
       }
       return res.status(401).json({ message: "Username ama password khalad ah." });
     }
