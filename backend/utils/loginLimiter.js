@@ -28,7 +28,8 @@ const failureResult = (scope, id, message) => {
     return { status: 429, message: lockedMessage(Math.ceil(LOCK_MS / 1000)) };
   }
   attempts.set(k, entry);
-  return { status: 401, message };
+  const remaining = MAX_ATTEMPTS - entry.count;
+  return { status: 401, message: `${message} Waxaa kuu hadhay ${remaining} isku day.` };
 };
 
 const reset = (scope, id) => attempts.delete(key(scope, id));

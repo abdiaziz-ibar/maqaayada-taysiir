@@ -37,14 +37,15 @@ const login = async (req, res, next) => {
           data: { failedLoginCount, ...(lockingNow ? { lockedAt: new Date() } : {}) },
         });
         if (lockingNow) return res.status(423).json({ message: ACCOUNT_LOCKED_MESSAGE });
-      } else {
-        const { status, message } = failureResult("login-guess", username.toLowerCase(), "Username ama password khalad ah.");
-        return res.status(status).json({ message });
+        const remaining = MAX_FAILED_LOGINS - failedLoginCount;
+        return res.status(401).json({ message: `Username ama password khalad ah. Waxaa kuu hadhay ${remaining} isku day.` });
       }
-      return res.status(401).json({ message: "Username ama password khalad ah." });
+      const { status, message } = failureResult("login-guess", username.toLowerCase(), "Username ama password khalad ah.");
+      return res.status(status).json({ message });
     }
 
     if (user.failedLoginCount > 0) {
+      user.failedLoginCount = 0;
       await prisma.user.update({ where: { id: user.id }, data: { failedLoginCount: 0 } });
     }
     const token = generateToken(user.id);
