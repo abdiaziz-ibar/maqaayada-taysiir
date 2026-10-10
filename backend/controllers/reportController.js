@@ -139,6 +139,48 @@ const studentMealHistory = async (req, res, next) => {
   }
 };
 
+// GET /api/reports/meal-attendance-monthly?year=&month=&classId=
+// For every active student, how many days they were expected/ate/missed
+// within that calendar month — a monthly roll-up of the daily Cuntada
+// Maalinlaha roster rather than one student's full history.
+const monthlyMealReport = async (req, res, next) => {
+  try {
+    const year = Number(req.query.year);
+    const month = Number(req.query.month);
+    const { classId } = req.query;
+    if (!year || !month) return res.status(400).json({ message: "Sanad iyo bil waa waajib." });
+
+    const start = new Date(Date.UTC(year, month - 1, 1));
+    const end = new Date(Date.UTC(year, month, 1));
+
+    const students = await prisma.student.findMany({
+      where: { status: "active", ...(classId ? { classId } : {}) },
+      include: { class: true, mealAttendances: { where: { date: { gte: start, lt: end } } } },
+      orderBy: { fullName: "asc" },
+    });
+
+    const rows = students.map((s) => {
+      const expected = s.mealAttendances.length;
+      const ate = s.mealAttendances.filter((a) => a.status === "ate").length;
+      const missed = s.mealAttendances.filter((a) => a.status === "did_not_eat").length;
+      return {
+        studentId: s.id,
+        fullName: s.fullName,
+        studentCode: s.studentCode,
+        className: s.class?.name || null,
+        expected,
+        ate,
+        missed,
+        attendancePercentage: expected > 0 ? Math.round((ate / expected) * 100) : 0,
+      };
+    });
+
+    res.json({ year, month, rows });
+  } catch (err) {
+    next(err);
+  }
+};
+
 // GET /api/reports/profit-loss?year=&month=
 // "Xisaab-xir": money in (meal-fee payments + paid occasional meals) vs
 // money out (operating expenses) for one calendar month, so a loss shows
@@ -181,4 +223,4 @@ const profitAndLoss = async (req, res, next) => {
   }
 };
 
-module.exports = { outstandingBalances, monthlyPaymentReport, annualReport, studentMealHistory, profitAndLoss };
+module.exports = { outstandingBalances, monthlyPaymentReport, annualReport, studentMealHistory, monthlyMealReport, profitAndLoss };

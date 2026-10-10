@@ -1,5 +1,5 @@
 const express = require("express");
-const { outstandingBalances, monthlyPaymentReport, annualReport, studentMealHistory, profitAndLoss } = require("../controllers/reportController");
+const { outstandingBalances, monthlyPaymentReport, annualReport, studentMealHistory, monthlyMealReport, profitAndLoss } = require("../controllers/reportController");
 const { protect } = require("../middleware/auth");
 
 const router = express.Router();
@@ -9,6 +9,7 @@ router.get("/outstanding-balances", outstandingBalances);
 router.get("/monthly-payments", monthlyPaymentReport);
 router.get("/annual", annualReport);
 router.get("/student-meal-history/:studentId", studentMealHistory);
+router.get("/meal-attendance-monthly", monthlyMealReport);
 router.get("/profit-loss", profitAndLoss);
 
 module.exports = router;

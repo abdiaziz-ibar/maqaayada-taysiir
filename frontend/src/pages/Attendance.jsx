@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Check, X as XIcon, Download, RotateCcw } from "lucide-react";
 import api from "../api/axios";
-import { todayIso, mealTypeLabel, formatDate, exportToExcel } from "../utils/format";
+import { todayIso, mealTypeLabel, formatDate, exportToExcel, monthLabel } from "../utils/format";
 import { useAuth } from "../context/AuthContext";
 import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
 
@@ -50,6 +50,11 @@ const Attendance = () => {
   const [tab, setTab] = useState("roster"); // roster | who-ate | who-did-not-eat
   const [reportRows, setReportRows] = useState([]);
   const [resetting, setResetting] = useState(null);
+  const now = new Date();
+  const [reportYear, setReportYear] = useState(now.getFullYear());
+  const [reportMonth, setReportMonth] = useState(now.getMonth() + 1);
+  const [monthlyRows, setMonthlyRows] = useState([]);
+  const [monthlyLoading, setMonthlyLoading] = useState(false);
 
   useEffect(() => { api.get("/classes").then((res) => setClasses(res.data.classes)); }, []);
 
@@ -73,9 +78,18 @@ const Attendance = () => {
 
   useEffect(() => {
     if (tab === "roster") loadRoster();
+    else if (tab === "monthly") loadMonthlyReport();
     else loadReport(tab);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [date, mealType, classId, sectionId, tab]);
+  }, [date, mealType, classId, sectionId, tab, reportYear, reportMonth]);
+
+  const loadMonthlyReport = () => {
+    setMonthlyLoading(true);
+    api
+      .get("/reports/meal-attendance-monthly", { params: { year: reportYear, month: reportMonth, ...(classId ? { classId } : {}) } })
+      .then((res) => setMonthlyRows(res.data.rows))
+      .finally(() => setMonthlyLoading(false));
+  };
 
   const mark = async (studentId, ate) => {
     setMarking(studentId);
@@ -97,6 +111,19 @@ const Attendance = () => {
       Telefoon: r.student.parent?.phone || "",
     }));
     exportToExcel(rows, `${tab}-${date}`);
+  };
+
+  const doExportMonthly = () => {
+    const rows = monthlyRows.map((r) => ({
+      Arday: r.fullName,
+      Code: r.studentCode,
+      Fasal: r.className || "",
+      "La Filayay": r.expected,
+      "Wuu Cunay": r.ate,
+      "Ma Cunin": r.missed,
+      "Boqolkiiba": `${r.attendancePercentage}%`,
+    }));
+    exportToExcel(rows, `warbixin-cunto-${reportYear}-${reportMonth}`);
   };
 
   return (
@@ -129,8 +156,8 @@ const Attendance = () => {
         )}
       </div>
 
-      <div className="flex gap-2 bg-paper rounded-full p-1 max-w-md">
-        {[["roster", "Diiwaan Geli"], ["who-ate", "Kuwa Cunay"], ["who-did-not-eat", "Kuwa Aan Cunin"]].map(([key, label]) => (
+      <div className="flex gap-2 bg-paper rounded-full p-1 max-w-xl flex-wrap">
+        {[["roster", "Diiwaan Geli"], ["who-ate", "Kuwa Cunay"], ["who-did-not-eat", "Kuwa Aan Cunin"], ["monthly", "Warbixin Bille"]].map(([key, label]) => (
           <button key={key} onClick={() => setTab(key)} className={`flex-1 py-1.5 rounded-full text-sm transition-colors ${tab === key ? "bg-surface shadow-sm" : "text-ink/50"}`}>
             {label}
           </button>
@@ -146,7 +173,45 @@ const Attendance = () => {
         </div>
       )}
 
-      {tab !== "roster" && (
+      {tab === "monthly" && (
+        <div className="space-y-4">
+          <div className="card flex flex-wrap items-end gap-3">
+            <div>
+              <label className="label-field">Bisha</label>
+              <select className="input-field" value={reportMonth} onChange={(e) => setReportMonth(Number(e.target.value))}>
+                {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => <option key={m} value={m}>{monthLabel(m)}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="label-field">Sanadka</label>
+              <input type="number" className="input-field w-28" value={reportYear} onChange={(e) => setReportYear(Number(e.target.value))} />
+            </div>
+          </div>
+          <div className="card overflow-x-auto">
+            <div className="flex justify-end mb-2">
+              <button onClick={doExportMonthly} className="btn-secondary flex items-center gap-2 text-sm"><Download size={14} /> Excel</button>
+            </div>
+            <table className="table-base">
+              <thead><tr><th>Arday</th><th>Fasal</th><th className="text-right">La Filayay</th><th className="text-right">Wuu Cunay</th><th className="text-right">Ma Cunin</th><th className="text-right">Boqolkiiba</th></tr></thead>
+              <tbody>
+                {monthlyRows.map((r) => (
+                  <tr key={r.studentId}>
+                    <td>{r.fullName} <span className="text-ink/40 text-xs">({r.studentCode})</span></td>
+                    <td>{r.className || "-"}</td>
+                    <td className="text-right">{r.expected}</td>
+                    <td className="text-right text-success">{r.ate}</td>
+                    <td className="text-right text-danger">{r.missed}</td>
+                    <td className="text-right">{r.attendancePercentage}%</td>
+                  </tr>
+                ))}
+                {!monthlyLoading && monthlyRows.length === 0 && <tr><td colSpan={6} className="text-center text-ink/40 py-6">Wax lama helin bishan.</td></tr>}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {tab !== "roster" && tab !== "monthly" && (
         <div className="card overflow-x-auto">
           <div className="flex justify-end mb-2">
             <button onClick={doExport} className="btn-secondary flex items-center gap-2 text-sm"><Download size={14} /> Excel</button>

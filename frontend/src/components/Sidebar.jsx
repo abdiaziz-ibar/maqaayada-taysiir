@@ -8,15 +8,12 @@ import {
   Utensils,
   UtensilsCrossed,
   UserRound,
-  Apple,
-  CalendarDays,
   CreditCard,
   Receipt,
   AlertTriangle,
   BarChart3,
   CalendarRange,
   UserCog,
-  FileWarning,
   Wallet,
   Settings as SettingsIcon,
   ChevronDown,
@@ -94,15 +91,13 @@ const Sidebar = ({ open, onClose }) => {
           <NavGroup
             icon={UtensilsCrossed}
             label="Nidaamka Cuntada"
-            paths={["/classes", "/meal-plans", "/attendance", "/occasional-meals", "/foods", "/menu"]}
+            paths={["/classes", "/meal-plans", "/attendance", "/occasional-meals"]}
             pathname={pathname}
           >
             <NavItem to="/classes" icon={Layers} onClick={onClose}>Fasallada</NavItem>
             <NavItem to="/meal-plans" icon={Utensils} onClick={onClose}>Meal Plans</NavItem>
             <NavItem to="/attendance" icon={UtensilsCrossed} onClick={onClose}>Cuntada Maalinlaha</NavItem>
             <NavItem to="/occasional-meals" icon={UserRound} onClick={onClose}>Cunto Mar-mar ah</NavItem>
-            <NavItem to="/foods" icon={Apple} onClick={onClose}>Cuntooyinka</NavItem>
-            <NavItem to="/menu" icon={CalendarDays} onClick={onClose}>Menu-ga</NavItem>
           </NavGroup>
 
           <NavGroup
@@ -140,9 +135,8 @@ const Sidebar = ({ open, onClose }) => {
           </NavGroup>
 
           {user?.role === "admin" ? (
-            <NavGroup icon={UserCog} label="Maamulka" paths={["/users", "/audit-logs", "/settings"]} pathname={pathname}>
+            <NavGroup icon={UserCog} label="Maamulka" paths={["/users", "/settings"]} pathname={pathname}>
               <NavItem to="/users" icon={UserCog} onClick={onClose}>Isticmaalayaasha</NavItem>
-              <NavItem to="/audit-logs" icon={FileWarning} onClick={onClose}>Audit Logs</NavItem>
               <NavItem to="/settings" icon={SettingsIcon} onClick={onClose}>Dejinta</NavItem>
             </NavGroup>
           ) : (
