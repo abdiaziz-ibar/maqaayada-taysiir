@@ -4,26 +4,26 @@ export default {
   theme: {
     extend: {
       colors: {
-        paper: "#F7F4EF",
+        paper: "#F7F3F1",
         surface: "#FFFFFF",
-        ink: "#0E1318",
+        ink: "#241317",
         navy: {
-          DEFAULT: "#0E1318",
-          light: "#1C2530",
-          dark: "#07090C",
+          DEFAULT: "#5C1422",
+          light: "#73192C",
+          dark: "#3E0D17",
         },
         amber: {
-          DEFAULT: "#FF8E28",
-          light: "#FFB061",
+          DEFAULT: "#C2770C",
+          light: "#E3A94F",
         },
         brand: {
-          DEFAULT: "#FF8E28",
-          dark: "#E67A12",
+          DEFAULT: "#C2293D",
+          dark: "#9E1F30",
         },
-        link: "#E67A12",
+        link: "#9E1F30",
         success: "#2F7A4D",
         danger: "#C2412D",
-        line: "#ECE6DD",
+        line: "#ECE0DE",
       },
       fontFamily: {
         display: ["Poppins", "system-ui", "sans-serif"],

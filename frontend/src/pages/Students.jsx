@@ -1,10 +1,24 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { Plus, Search, X, Pencil, Trash2, FileText } from "lucide-react";
+import { Plus, Search, X, Pencil, Trash2, FileText, Eye, RefreshCcw, Users, GraduationCap, UserX, UsersRound } from "lucide-react";
 import api from "../api/axios";
 import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
 import { useAuth } from "../context/AuthContext";
 import { downloadWordTable } from "../utils/exportWord";
+
+const StatCard = ({ icon: Icon, value, label, color }) => (
+  <div className="card flex items-center gap-3 p-4">
+    <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-white shrink-0 ${color}`}>
+      <Icon size={20} />
+    </div>
+    <div>
+      <p className="text-xl font-display font-semibold leading-none">{value}</p>
+      <p className="text-ink/50 text-xs mt-1.5">{label}</p>
+    </div>
+  </div>
+);
+
+const STATUS_FILTERS = [["all", "Dhammaan"], ["active", "Firfircoon"], ["inactive", "Aan Firfircoonayn"]];
 
 const StudentModal = ({ open, onClose, onSaved, editing }) => {
   const [fullName, setFullName] = useState("");
@@ -179,6 +193,7 @@ const Students = () => {
   const classIdFilter = searchParams.get("classId") || "";
   const [students, setStudents] = useState([]);
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -220,31 +235,63 @@ const Students = () => {
     load();
   };
 
+  const activeCount = students.filter((s) => s.status === "active").length;
+  const inactiveCount = students.length - activeCount;
+  const maleCount = students.filter((s) => s.gender === "male").length;
+  const femaleCount = students.filter((s) => s.gender === "female").length;
+  const visibleStudents = students.filter((s) => statusFilter === "all" || s.status === statusFilter);
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-2xl">Ardayda</h1>
-        <div className="flex items-center gap-2">
-          <button onClick={exportWord} disabled={students.length === 0} className="btn-secondary flex items-center gap-2">
-            <FileText size={16} /> Word ga dhoh
-          </button>
-          <button onClick={() => { setEditing(null); setShowAdd(true); }} className="btn-primary flex items-center gap-2">
-            <Plus size={16} /> Arday Cusub
-          </button>
+        <div>
+          <h1 className="text-2xl">Ardayda</h1>
+          <p className="text-ink/50 text-sm mt-0.5">Maamul diiwaangelinta, fasallada, iyo xogta ardayda</p>
         </div>
+        <button onClick={() => { setEditing(null); setShowAdd(true); }} className="btn-primary flex items-center gap-2">
+          <Plus size={16} /> Arday Cusub
+        </button>
       </div>
 
-      <div className="relative max-w-sm">
-        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink/35" />
-        <input className="input-field pl-9" placeholder="Raadi magac ama code..." value={search} onChange={(e) => setSearch(e.target.value)} />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <StatCard icon={Users} value={students.length} label="Wadarta Ardayda" color="bg-[#2D6CDF]" />
+        <StatCard icon={GraduationCap} value={activeCount} label="Firfircoon" color="bg-success" />
+        <StatCard icon={UserX} value={inactiveCount} label="Aan Firfircoonayn" color="bg-amber" />
+        <StatCard icon={UsersRound} value={`${maleCount}M / ${femaleCount}F`} label="Gender Ratio" color="bg-[#C23B8D]" />
+      </div>
+
+      <div className="card flex items-center flex-wrap gap-3 p-3">
+        <div className="relative flex-1 min-w-[220px]">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink/35" />
+          <input className="input-field pl-9" placeholder="Raadi magac ama code..." value={search} onChange={(e) => setSearch(e.target.value)} />
+        </div>
+        <div className="flex items-center gap-2">
+          {STATUS_FILTERS.map(([v, label]) => (
+            <button
+              key={v}
+              onClick={() => setStatusFilter(v)}
+              className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap ${statusFilter === v ? "bg-brand text-white" : "bg-paper text-ink/60 hover:text-ink"}`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-1 ml-auto">
+          <button onClick={load} className="p-2 rounded-lg text-ink/50 hover:text-ink hover:bg-paper" title="Cusboonaysii">
+            <RefreshCcw size={16} />
+          </button>
+          <button onClick={exportWord} disabled={students.length === 0} className="p-2 rounded-lg text-ink/50 hover:text-ink hover:bg-paper disabled:opacity-40" title="Word ga dhoh">
+            <FileText size={16} />
+          </button>
+        </div>
       </div>
 
       <div className="card overflow-x-auto">
         <table className="table-base">
           <thead>
             <tr>
-              <th>Code</th>
-              <th>Magaca</th>
+              <th>Arday</th>
+              <th>Student ID</th>
               <th>Fasalka</th>
               <th>Waalidka</th>
               <th>Meal Plan</th>
@@ -253,25 +300,42 @@ const Students = () => {
             </tr>
           </thead>
           <tbody>
-            {students.map((s) => (
+            {visibleStudents.map((s) => (
               <tr key={s._id} className="cursor-pointer hover:bg-paper" onClick={() => navigate(`/students/${s._id}`)}>
-                <td>{s.studentCode}</td>
-                <td>{s.fullName}</td>
+                <td>
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-brand text-white flex items-center justify-center font-semibold text-sm shrink-0">
+                      {s.fullName?.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="font-medium text-ink">{s.fullName}</p>
+                      <p className="text-ink/40 text-xs capitalize">{s.gender || "-"}</p>
+                    </div>
+                  </div>
+                </td>
+                <td><span className="font-mono text-xs bg-paper border border-line rounded px-2 py-1">{s.studentCode}</span></td>
                 <td>{s.class?.name || "-"} {s.section ? `(${s.section.name})` : ""}</td>
-                <td>{s.parent?.fullName} ({s.parent?.phone})</td>
+                <td>
+                  <p className="text-ink">{s.parent?.fullName}</p>
+                  <p className="text-ink/40 text-xs">{s.parent?.phone}</p>
+                </td>
                 <td>{s.mealPlan?.name || <span className="text-ink/40">Mar-mar oo kaliya</span>}</td>
                 <td>
-                  <span className={`badge ${s.status === "active" ? "badge-paid" : "badge-unpaid"}`}>
+                  <span className="flex items-center gap-1.5 text-sm">
+                    <span className={`w-1.5 h-1.5 rounded-full ${s.status === "active" ? "bg-success" : "bg-danger"}`} />
                     {s.status === "active" ? "Firfircoon" : "Aan Firfircoonayn"}
                   </span>
                 </td>
                 <td onClick={(e) => e.stopPropagation()}>
                   <div className="flex items-center gap-3">
-                    <button onClick={() => toggleStatus(s)} className="text-link text-sm hover:underline">
-                      {s.status === "active" ? "Jooji" : "Dib u Hawlgeli"}
+                    <button onClick={() => navigate(`/students/${s._id}`)} className="text-ink/40 hover:text-ink" title="Fiiri">
+                      <Eye size={15} />
                     </button>
-                    <button onClick={() => { setEditing(s); setShowAdd(true); }} className="text-ink/50 hover:text-ink" title="Wax ka beddel">
+                    <button onClick={() => { setEditing(s); setShowAdd(true); }} className="text-ink/40 hover:text-ink" title="Wax ka beddel">
                       <Pencil size={15} />
+                    </button>
+                    <button onClick={() => toggleStatus(s)} className="text-link text-xs hover:underline whitespace-nowrap">
+                      {s.status === "active" ? "Jooji" : "Dib u Hawlgeli"}
                     </button>
                     {user?.role === "admin" && (
                       <button onClick={() => setDeleting(s)} className="text-danger/70 hover:text-danger" title="Tirtir">
@@ -282,7 +346,7 @@ const Students = () => {
                 </td>
               </tr>
             ))}
-            {!loading && students.length === 0 && (
+            {!loading && visibleStudents.length === 0 && (
               <tr><td colSpan={7} className="text-center text-ink/40 py-6">Arday lama helin.</td></tr>
             )}
           </tbody>
