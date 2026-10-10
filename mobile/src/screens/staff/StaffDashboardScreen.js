@@ -1,31 +1,82 @@
 import { useCallback, useEffect, useState } from "react";
 import { View, Text, ScrollView, StyleSheet, RefreshControl } from "react-native";
+import Svg, { Circle } from "react-native-svg";
 import { Ionicons } from "@expo/vector-icons";
 import staffApi from "../../api/staffClient";
 import { useAuth } from "../../context/AuthContext";
 import { StaffHeader, Loading } from "../../components/UI";
-import { formatMoney, COLORS } from "../../utils/format";
+import { formatMoney, monthLabel, COLORS } from "../../utils/format";
 
-const Stat = ({ label, value, color, icon, badgeColor }) => (
-  <View style={styles.stat}>
-    <View style={styles.statHead}>
-      <Text style={styles.statLabel}>{label}</Text>
-      <View style={[styles.statBadge, { backgroundColor: badgeColor }]}>
-        <Ionicons name={icon} size={15} color="#fff" />
+const RING_SIZE = 72;
+const RING_STROKE = 7;
+const RING_RADIUS = (RING_SIZE - RING_STROKE) / 2;
+const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
+
+const ProgressRing = ({ percent }) => (
+  <View style={{ width: RING_SIZE, height: RING_SIZE }}>
+    <Svg width={RING_SIZE} height={RING_SIZE}>
+      <Circle
+        cx={RING_SIZE / 2}
+        cy={RING_SIZE / 2}
+        r={RING_RADIUS}
+        stroke="rgba(255,255,255,0.25)"
+        strokeWidth={RING_STROKE}
+        fill="none"
+      />
+      <Circle
+        cx={RING_SIZE / 2}
+        cy={RING_SIZE / 2}
+        r={RING_RADIUS}
+        stroke="#fff"
+        strokeWidth={RING_STROKE}
+        fill="none"
+        strokeLinecap="round"
+        strokeDasharray={RING_CIRCUMFERENCE}
+        strokeDashoffset={RING_CIRCUMFERENCE * (1 - percent / 100)}
+        rotation="-90"
+        origin={`${RING_SIZE / 2}, ${RING_SIZE / 2}`}
+      />
+    </Svg>
+    <View style={StyleSheet.absoluteFillObject}>
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+        <Text style={styles.ringText}>{percent}%</Text>
       </View>
     </View>
-    <Text style={[styles.statValue, color && { color }]}>{value}</Text>
+  </View>
+);
+
+const StatCard = ({ icon, label, value, badgeColor }) => (
+  <View style={styles.stat}>
+    <View style={styles.statTop}>
+      <View style={[styles.statBadge, { backgroundColor: badgeColor }]}>
+        <Ionicons name={icon} size={16} color="#fff" />
+      </View>
+      <Text style={styles.statLabel}>{label}</Text>
+    </View>
+    <Text style={styles.statValue}>{value}</Text>
+  </View>
+);
+
+const StatusCount = ({ value, label, color }) => (
+  <View style={{ alignItems: "center", flex: 1 }}>
+    <Text style={[styles.statusValue, { color }]}>{value}</Text>
+    <Text style={styles.statusLabel}>{label}</Text>
   </View>
 );
 
 const StaffDashboardScreen = () => {
   const { staff } = useAuth();
   const [data, setData] = useState(null);
+  const [months, setMonths] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
-    const res = await staffApi.get("/dashboard");
-    setData(res.data);
+    const [dash, annual] = await Promise.all([
+      staffApi.get("/dashboard"),
+      staffApi.get("/reports/annual").catch(() => null),
+    ]);
+    setData(dash.data);
+    setMonths(annual?.data?.months || []);
   }, []);
 
   useEffect(() => {
@@ -43,6 +94,8 @@ const StaffDashboardScreen = () => {
   const expected = data.financial.monthRevenueExpected;
   const collected = data.financial.monthPayments;
   const collectionRate = expected > 0 ? Math.min(100, Math.round((collected / expected) * 100)) : 0;
+  const maxMonthPaid = Math.max(1, ...months.map((m) => m.totalPaid));
+  const statusCounts = data.financial.invoiceStatusCounts;
 
   return (
     <View style={styles.flex}>
@@ -50,39 +103,65 @@ const StaffDashboardScreen = () => {
       <ScrollView contentContainerStyle={styles.content} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
         <View style={styles.hero}>
           <View style={styles.heroBlob} />
-          <Text style={styles.heroSmall}>Ku Soo Dhawoow,</Text>
-          <Text style={styles.heroName}>{staff?.fullName?.split(" ")[0] || "Admin"}</Text>
+          <View style={styles.heroTop}>
+            <View>
+              <Text style={styles.heroSmall}>Ku Soo Dhawoow,</Text>
+              <Text style={styles.heroName}>{staff?.fullName?.split(" ")[0] || "Admin"}</Text>
+            </View>
+            <ProgressRing percent={collectionRate} />
+          </View>
           <View style={styles.progressTrack}>
             <View style={[styles.progressFill, { width: `${collectionRate}%` }]} />
           </View>
-          <View style={styles.progressRow}>
-            <Text style={styles.heroSmall}>Collection Rate: {formatMoney(collected)} / {formatMoney(expected)}</Text>
-            <Text style={styles.heroPct}>{collectionRate}%</Text>
-          </View>
+          <Text style={styles.heroSmall}>Collection Rate: {formatMoney(collected)} / {formatMoney(expected)}</Text>
+        </View>
+
+        <View style={styles.grid}>
+          <StatCard icon="people-outline" label="Waalidiinta" value={data.financial.parentsCount} badgeColor="#2D6CDF" />
+          <StatCard icon="wallet-outline" label="Wadarta Lacagta" value={formatMoney(expected)} badgeColor="#7C3AED" />
+          <StatCard icon="checkmark-circle-outline" label="La Bixiyey" value={formatMoney(collected)} badgeColor={COLORS.success} />
+          <StatCard icon="alert-circle-outline" label="Deynta" value={formatMoney(data.financial.outstanding)} badgeColor={COLORS.danger} />
+        </View>
+
+        <View style={styles.statusRow}>
+          <StatusCount value={statusCounts.paid} label="La Bixiyey" color={COLORS.success} />
+          <View style={styles.statusDivider} />
+          <StatusCount value={statusCounts.partial} label="Qayb Ahaan" color={COLORS.amber} />
+          <View style={styles.statusDivider} />
+          <StatusCount value={statusCounts.unpaid} label="Lama Bixin" color={COLORS.danger} />
         </View>
 
         <Text style={styles.groupTitle}>Ardayda</Text>
         <View style={styles.grid}>
-          <Stat label="Wadarta" value={data.students.total} icon="people-outline" badgeColor="#2D6CDF" />
-          <Stat label="Firfircoon" value={data.students.active} color={COLORS.success} icon="checkmark-circle-outline" badgeColor={COLORS.success} />
-          <Stat label="Meal Plan" value={data.students.mealPlanEnrolled} icon="restaurant-outline" badgeColor={COLORS.amber} />
-          <Stat label="Mar-mar (30 mln)" value={data.students.occasionalLast30Days} icon="person-outline" badgeColor="#7C3AED" />
+          <StatCard icon="school-outline" label="Wadarta Ardayda" value={data.students.total} badgeColor="#2D6CDF" />
+          <StatCard icon="checkmark-circle-outline" label="Firfircoon" value={data.students.active} badgeColor={COLORS.success} />
+          <StatCard icon="restaurant-outline" label="Meal Plan" value={data.students.mealPlanEnrolled} badgeColor={COLORS.amber} />
+          <StatCard icon="person-outline" label="Mar-mar (30 mln)" value={data.students.occasionalLast30Days} badgeColor="#7C3AED" />
         </View>
+
+        {months.length > 0 && (
+          <>
+            <Text style={styles.groupTitle}>Lacagta Bil Kasta</Text>
+            <View style={styles.card}>
+              {months.map((m) => (
+                <View key={`${m.year}-${m.month}`} style={styles.barRow}>
+                  <Text style={styles.barLabel}>{monthLabel(m.month)}</Text>
+                  <View style={styles.barTrack}>
+                    <View style={[styles.barFill, { width: `${Math.max(4, (m.totalPaid / maxMonthPaid) * 100)}%` }]} />
+                  </View>
+                  <Text style={styles.barValue}>{formatMoney(m.totalPaid)}</Text>
+                </View>
+              ))}
+            </View>
+          </>
+        )}
 
         <Text style={styles.groupTitle}>Cuntada Maanta</Text>
         <View style={styles.grid}>
-          <Stat label="La Filayay" value={data.todayMeals.expected} icon="time-outline" badgeColor="#2D6CDF" />
-          <Stat label="Wuu Cunay" value={data.todayMeals.ate} color={COLORS.success} icon="checkmark-circle-outline" badgeColor={COLORS.success} />
-          <Stat label="Ma Cunin" value={data.todayMeals.didNotEat} color={COLORS.danger} icon="close-circle-outline" badgeColor={COLORS.danger} />
-          <Stat label="Boqolkiiba" value={`${data.todayMeals.attendancePercentage}%`} icon="stats-chart-outline" badgeColor="#7C3AED" />
-        </View>
-
-        <Text style={styles.groupTitle}>Maaliyadda</Text>
-        <View style={styles.grid}>
-          <Stat label="Maanta" value={formatMoney(data.financial.todaysPayments)} color={COLORS.success} icon="cash-outline" badgeColor={COLORS.success} />
-          <Stat label="Bishaan" value={formatMoney(data.financial.monthPayments)} color={COLORS.success} icon="wallet-outline" badgeColor={COLORS.success} />
-          <Stat label="La Sugayo" value={formatMoney(data.financial.outstanding)} color={COLORS.danger} icon="alert-circle-outline" badgeColor={COLORS.danger} />
-          <Stat label="Waalid Aan Bixin" value={data.financial.unpaidParents} color={COLORS.danger} icon="people-outline" badgeColor={COLORS.danger} />
+          <StatCard icon="time-outline" label="La Filayay" value={data.todayMeals.expected} badgeColor="#2D6CDF" />
+          <StatCard icon="checkmark-circle-outline" label="Wuu Cunay" value={data.todayMeals.ate} badgeColor={COLORS.success} />
+          <StatCard icon="close-circle-outline" label="Ma Cunin" value={data.todayMeals.didNotEat} badgeColor={COLORS.danger} />
+          <StatCard icon="stats-chart-outline" label="Boqolkiiba" value={`${data.todayMeals.attendancePercentage}%`} badgeColor="#7C3AED" />
         </View>
 
         {data.restaurant.todayMenus.length > 0 && (
@@ -108,12 +187,12 @@ const styles = StyleSheet.create({
   content: { padding: 14, paddingBottom: 40 },
   hero: { backgroundColor: COLORS.navy, borderRadius: 18, padding: 18, marginBottom: 16, overflow: "hidden" },
   heroBlob: { position: "absolute", top: -50, right: -50, width: 140, height: 140, borderRadius: 70, backgroundColor: "rgba(255,255,255,0.06)" },
+  heroTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 14 },
   heroSmall: { color: "rgba(255,255,255,0.65)", fontSize: 12, marginTop: 4 },
-  heroName: { color: "#fff", fontSize: 24, fontWeight: "700", marginBottom: 14 },
-  progressTrack: { height: 6, backgroundColor: "rgba(255,255,255,0.2)", borderRadius: 999, overflow: "hidden" },
-  progressFill: { height: 6, backgroundColor: COLORS.success, borderRadius: 999 },
-  progressRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 8 },
-  heroPct: { color: "#fff", fontSize: 13, fontWeight: "700" },
+  heroName: { color: "#fff", fontSize: 22, fontWeight: "700" },
+  ringText: { color: "#fff", fontSize: 14, fontWeight: "700" },
+  progressTrack: { height: 6, backgroundColor: "rgba(255,255,255,0.2)", borderRadius: 999, overflow: "hidden", marginBottom: 8 },
+  progressFill: { height: 6, backgroundColor: "#fff", borderRadius: 999 },
   groupTitle: { fontSize: 12, color: "rgba(36,19,23,0.5)", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8, marginTop: 4 },
   grid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", marginBottom: 8 },
   stat: {
@@ -125,12 +204,30 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.line,
   },
-  statHead: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between" },
-  statBadge: { width: 26, height: 26, borderRadius: 13, alignItems: "center", justifyContent: "center" },
-  statLabel: { fontSize: 10, color: "rgba(36,19,23,0.5)", textTransform: "uppercase", letterSpacing: 0.5, flex: 1, marginRight: 6 },
-  statValue: { fontSize: 18, fontWeight: "700", color: COLORS.ink, marginTop: 10 },
+  statTop: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 10 },
+  statBadge: { width: 28, height: 28, borderRadius: 14, alignItems: "center", justifyContent: "center" },
+  statLabel: { fontSize: 11, color: "rgba(36,19,23,0.55)", flexShrink: 1 },
+  statValue: { fontSize: 17, fontWeight: "700", color: COLORS.ink },
+  statusRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: COLORS.surface,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: COLORS.line,
+    paddingVertical: 16,
+    marginBottom: 16,
+  },
+  statusDivider: { width: 1, height: 32, backgroundColor: COLORS.line },
+  statusValue: { fontSize: 20, fontWeight: "700" },
+  statusLabel: { fontSize: 11, color: "rgba(36,19,23,0.5)", marginTop: 2 },
   card: { backgroundColor: COLORS.surface, borderRadius: 12, padding: 14, borderWidth: 1, borderColor: COLORS.line },
   menuLine: { fontSize: 13, color: COLORS.ink, marginBottom: 4, textTransform: "capitalize" },
+  barRow: { flexDirection: "row", alignItems: "center", marginBottom: 10 },
+  barLabel: { width: 64, fontSize: 12, color: "rgba(36,19,23,0.6)" },
+  barTrack: { flex: 1, height: 10, backgroundColor: COLORS.paper, borderRadius: 999, overflow: "hidden", marginHorizontal: 8 },
+  barFill: { height: 10, backgroundColor: COLORS.brand, borderRadius: 999 },
+  barValue: { width: 60, fontSize: 12, color: COLORS.ink, fontWeight: "600", textAlign: "right" },
 });
 
 export default StaffDashboardScreen;

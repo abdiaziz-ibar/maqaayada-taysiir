@@ -9,7 +9,7 @@ const getDashboard = async (req, res, next) => {
     const year = now.getFullYear();
     const month = now.getMonth() + 1;
 
-    const [totalStudents, activeStudents, mealPlanStudents, occasionalCount, todayAttendance, monthInvoices, unpaidParentsRaw, todayMenus] =
+    const [totalStudents, activeStudents, mealPlanStudents, occasionalCount, todayAttendance, monthInvoices, unpaidParentsRaw, todayMenus, parentsCount] =
       await Promise.all([
         prisma.student.count(),
         prisma.student.count({ where: { status: "active" } }),
@@ -19,6 +19,7 @@ const getDashboard = async (req, res, next) => {
         prisma.invoice.findMany({ where: { year, month } }),
         prisma.invoice.findMany({ where: { status: { in: ["unpaid", "partial"] } }, select: { student: { select: { parentId: true } } } }),
         prisma.menu.findMany({ where: { date: today }, include: { items: { include: { food: true } } } }),
+        prisma.parent.count(),
       ]);
 
     const expectedToday = todayAttendance.length;
@@ -49,6 +50,12 @@ const getDashboard = async (req, res, next) => {
         monthRevenueExpected: monthInvoices.reduce((s, i) => s + i.amountDue, 0),
         outstanding: monthInvoices.reduce((s, i) => s + (i.amountDue - i.amountPaid), 0),
         unpaidParents: new Set(unpaidParentsRaw.map((i) => i.student.parentId)).size,
+        parentsCount,
+        invoiceStatusCounts: {
+          paid: monthInvoices.filter((i) => i.status === "paid").length,
+          partial: monthInvoices.filter((i) => i.status === "partial").length,
+          unpaid: monthInvoices.filter((i) => i.status === "unpaid").length,
+        },
       },
       restaurant: {
         todayMenus: todayMenus.map((m) => ({ mealType: m.mealType, foods: m.items.map((it) => it.food.name) })),
