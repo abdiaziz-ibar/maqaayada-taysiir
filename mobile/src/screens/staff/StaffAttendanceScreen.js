@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, TextInput, RefreshControl } from "react-native";
 import staffApi from "../../api/staffClient";
-import { StaffHeader, ChipRow, Chip, Loading } from "../../components/UI";
+import { StaffHeader, Loading } from "../../components/UI";
 import ConfirmDeleteModal from "../../components/ConfirmDeleteModal";
 import { COLORS, todayIso, mealTypeLabel, formatDate } from "../../utils/format";
 import { useAuth } from "../../context/AuthContext";
 
-const MEAL_TYPES = ["breakfast", "lunch", "dinner"];
 const TABS = [["roster", "Diiwaan Geli"], ["who-ate", "Kuwa Cunay"], ["who-did-not-eat", "Kuwa Aan Cunin"]];
 
 const RosterRow = ({ row, onMark, marking, onReset, canReset }) => (
@@ -42,7 +41,7 @@ const RosterRow = ({ row, onMark, marking, onReset, canReset }) => (
 const StaffAttendanceScreen = () => {
   const { staff } = useAuth();
   const [date, setDate] = useState(todayIso());
-  const [mealType, setMealType] = useState("breakfast");
+  const mealType = "breakfast";
   const [tab, setTab] = useState("roster");
   const [roster, setRoster] = useState(null);
   const [reportRows, setReportRows] = useState(null);
@@ -91,11 +90,6 @@ const StaffAttendanceScreen = () => {
           <Text style={styles.todayBtnText}>Maanta</Text>
         </TouchableOpacity>
       </View>
-      <ChipRow>
-        {MEAL_TYPES.map((t) => (
-          <Chip key={t} label={mealTypeLabel(t)} active={mealType === t} onPress={() => setMealType(t)} />
-        ))}
-      </ChipRow>
       <View style={styles.tabRow}>
         {TABS.map(([key, label]) => (
           <TouchableOpacity key={key} style={[styles.tab, tab === key && styles.tabActive]} onPress={() => setTab(key)}>

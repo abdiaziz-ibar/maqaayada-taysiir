@@ -5,7 +5,7 @@ import { todayIso, mealTypeLabel, formatDate, exportToExcel } from "../utils/for
 import { useAuth } from "../context/AuthContext";
 import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
 
-const MEAL_TYPES = ["breakfast", "lunch", "dinner"];
+const MEAL_TYPES = ["breakfast"];
 
 const RosterCard = ({ row, onMark, marking, onReset, canReset }) => (
   <div className="card flex items-center justify-between gap-3 flex-wrap">
@@ -107,7 +107,7 @@ const Attendance = () => {
         <div><label className="label-field">Taariikh</label><input type="date" className="input-field" value={date} onChange={(e) => setDate(e.target.value)} /></div>
         <div>
           <label className="label-field">Nooca Cuntada</label>
-          <select className="input-field" value={mealType} onChange={(e) => setMealType(e.target.value)}>
+          <select className="input-field" value={mealType} onChange={(e) => setMealType(e.target.value)} disabled>
             {MEAL_TYPES.map((t) => <option key={t} value={t}>{mealTypeLabel(t)}</option>)}
           </select>
         </div>
