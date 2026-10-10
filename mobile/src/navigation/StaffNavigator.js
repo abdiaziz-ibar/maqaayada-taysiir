@@ -1,7 +1,6 @@
-import { TouchableOpacity, View, StyleSheet } from "react-native";
+import { Text, TouchableOpacity, View, StyleSheet } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { Ionicons } from "@expo/vector-icons";
 import StaffDashboardScreen from "../screens/staff/StaffDashboardScreen";
 import StaffAttendanceScreen from "../screens/staff/StaffAttendanceScreen";
 import StaffOccasionalMealsScreen from "../screens/staff/StaffOccasionalMealsScreen";
@@ -32,8 +31,8 @@ import { COLORS } from "../utils/format";
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
-const tabIcon = (name) => ({ focused }) => (
-  <Ionicons name={name} size={22} color={focused ? COLORS.brand : "rgba(36,19,23,0.4)"} />
+const tabIcon = (emoji) => ({ focused }) => (
+  <Text style={{ fontSize: 18, opacity: focused ? 1 : 0.5 }}>{emoji}</Text>
 );
 
 const FabTabButton = ({ onPress, accessibilityState }) => {
@@ -41,7 +40,7 @@ const FabTabButton = ({ onPress, accessibilityState }) => {
   return (
     <View style={styles.fabWrap}>
       <TouchableOpacity onPress={onPress} activeOpacity={0.85} style={[styles.fab, focused && styles.fabFocused]}>
-        <Ionicons name="restaurant" size={24} color="#fff" />
+        <Text style={{ fontSize: 22 }}>🍽️</Text>
       </TouchableOpacity>
     </View>
   );
@@ -58,15 +57,15 @@ const Tabs = () => (
       tabBarStyle: styles.tabBar,
     }}
   >
-    <Tab.Screen name="Home" component={StaffDashboardScreen} options={{ title: "Dashboard", tabBarIcon: tabIcon("grid-outline") }} />
-    <Tab.Screen name="Occasional" component={StaffOccasionalMealsScreen} options={{ title: "Mar-mar", tabBarIcon: tabIcon("hand-left-outline") }} />
+    <Tab.Screen name="Home" component={StaffDashboardScreen} options={{ title: "Dashboard", tabBarIcon: tabIcon("📊") }} />
+    <Tab.Screen name="Occasional" component={StaffOccasionalMealsScreen} options={{ title: "Mar-mar", tabBarIcon: tabIcon("🙋") }} />
     <Tab.Screen
       name="Attendance"
       component={StaffAttendanceScreen}
       options={{ title: "", tabBarButton: (props) => <FabTabButton {...props} /> }}
     />
-    <Tab.Screen name="Payments" component={StaffPaymentsScreen} options={{ title: "Lacagaha", tabBarIcon: tabIcon("cash-outline") }} />
-    <Tab.Screen name="More" component={StaffMoreScreen} options={{ title: "Dheeri", tabBarIcon: tabIcon("ellipsis-horizontal-outline") }} />
+    <Tab.Screen name="Payments" component={StaffPaymentsScreen} options={{ title: "Lacagaha", tabBarIcon: tabIcon("💵") }} />
+    <Tab.Screen name="More" component={StaffMoreScreen} options={{ title: "Dheeri", tabBarIcon: tabIcon("☰") }} />
   </Tab.Navigator>
 );
 

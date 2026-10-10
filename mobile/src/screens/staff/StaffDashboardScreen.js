@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { View, Text, ScrollView, StyleSheet, RefreshControl } from "react-native";
 import Svg, { Circle } from "react-native-svg";
-import { Ionicons } from "@expo/vector-icons";
 import staffApi from "../../api/staffClient";
 import { useAuth } from "../../context/AuthContext";
 import { StaffHeader, Loading } from "../../components/UI";
@@ -49,7 +48,7 @@ const StatCard = ({ icon, label, value, badgeColor }) => (
   <View style={styles.stat}>
     <View style={styles.statTop}>
       <View style={[styles.statBadge, { backgroundColor: badgeColor }]}>
-        <Ionicons name={icon} size={16} color="#fff" />
+        <Text style={{ fontSize: 14 }}>{icon}</Text>
       </View>
       <Text style={styles.statLabel}>{label}</Text>
     </View>
@@ -117,10 +116,10 @@ const StaffDashboardScreen = () => {
         </View>
 
         <View style={styles.grid}>
-          <StatCard icon="people-outline" label="Waalidiinta" value={data.financial.parentsCount} badgeColor="#2D6CDF" />
-          <StatCard icon="wallet-outline" label="Wadarta Lacagta" value={formatMoney(expected)} badgeColor="#7C3AED" />
-          <StatCard icon="checkmark-circle-outline" label="La Bixiyey" value={formatMoney(collected)} badgeColor={COLORS.success} />
-          <StatCard icon="alert-circle-outline" label="Deynta" value={formatMoney(data.financial.outstanding)} badgeColor={COLORS.danger} />
+          <StatCard icon="👨‍👩‍👧" label="Waalidiinta" value={data.financial.parentsCount} badgeColor="#2D6CDF" />
+          <StatCard icon="💰" label="Wadarta Lacagta" value={formatMoney(expected)} badgeColor="#7C3AED" />
+          <StatCard icon="✅" label="La Bixiyey" value={formatMoney(collected)} badgeColor={COLORS.success} />
+          <StatCard icon="⚠️" label="Deynta" value={formatMoney(data.financial.outstanding)} badgeColor={COLORS.danger} />
         </View>
 
         <View style={styles.statusRow}>
@@ -133,10 +132,10 @@ const StaffDashboardScreen = () => {
 
         <Text style={styles.groupTitle}>Ardayda</Text>
         <View style={styles.grid}>
-          <StatCard icon="school-outline" label="Wadarta Ardayda" value={data.students.total} badgeColor="#2D6CDF" />
-          <StatCard icon="checkmark-circle-outline" label="Firfircoon" value={data.students.active} badgeColor={COLORS.success} />
-          <StatCard icon="restaurant-outline" label="Meal Plan" value={data.students.mealPlanEnrolled} badgeColor={COLORS.amber} />
-          <StatCard icon="person-outline" label="Mar-mar (30 mln)" value={data.students.occasionalLast30Days} badgeColor="#7C3AED" />
+          <StatCard icon="🎓" label="Wadarta Ardayda" value={data.students.total} badgeColor="#2D6CDF" />
+          <StatCard icon="✅" label="Firfircoon" value={data.students.active} badgeColor={COLORS.success} />
+          <StatCard icon="🍱" label="Meal Plan" value={data.students.mealPlanEnrolled} badgeColor={COLORS.amber} />
+          <StatCard icon="🙋" label="Mar-mar (30 mln)" value={data.students.occasionalLast30Days} badgeColor="#7C3AED" />
         </View>
 
         {months.length > 0 && (
@@ -158,10 +157,10 @@ const StaffDashboardScreen = () => {
 
         <Text style={styles.groupTitle}>Cuntada Maanta</Text>
         <View style={styles.grid}>
-          <StatCard icon="time-outline" label="La Filayay" value={data.todayMeals.expected} badgeColor="#2D6CDF" />
-          <StatCard icon="checkmark-circle-outline" label="Wuu Cunay" value={data.todayMeals.ate} badgeColor={COLORS.success} />
-          <StatCard icon="close-circle-outline" label="Ma Cunin" value={data.todayMeals.didNotEat} badgeColor={COLORS.danger} />
-          <StatCard icon="stats-chart-outline" label="Boqolkiiba" value={`${data.todayMeals.attendancePercentage}%`} badgeColor="#7C3AED" />
+          <StatCard icon="⏱️" label="La Filayay" value={data.todayMeals.expected} badgeColor="#2D6CDF" />
+          <StatCard icon="✅" label="Wuu Cunay" value={data.todayMeals.ate} badgeColor={COLORS.success} />
+          <StatCard icon="❌" label="Ma Cunin" value={data.todayMeals.didNotEat} badgeColor={COLORS.danger} />
+          <StatCard icon="📈" label="Boqolkiiba" value={`${data.todayMeals.attendancePercentage}%`} badgeColor="#7C3AED" />
         </View>
 
         {data.restaurant.todayMenus.length > 0 && (

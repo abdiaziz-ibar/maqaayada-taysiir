@@ -10,17 +10,16 @@ import {
   ScrollView,
   ActivityIndicator,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
 import { COLORS } from "../utils/format";
 
 const IconInput = ({ icon, secure, toggleSecure, showToggle, ...props }) => (
   <View style={styles.inputWrap}>
-    <Ionicons name={icon} size={18} color="rgba(36,19,23,0.4)" style={styles.inputIcon} />
+    <Text style={styles.inputIcon}>{icon}</Text>
     <TextInput style={styles.input} placeholderTextColor="#9CA3AF" secureTextEntry={secure} {...props} />
     {showToggle && (
       <TouchableOpacity onPress={toggleSecure} style={styles.eyeBtn}>
-        <Ionicons name={secure ? "eye-outline" : "eye-off-outline"} size={18} color="rgba(36,19,23,0.4)" />
+        <Text style={{ fontSize: 16 }}>{secure ? "👁️" : "🙈"}</Text>
       </TouchableOpacity>
     )}
   </View>
@@ -111,7 +110,7 @@ const LoginScreen = () => {
               {error ? <Text style={styles.error}>{error}</Text> : null}
               <Text style={styles.label}>Username</Text>
               <IconInput
-                icon="person-outline"
+                icon="👤"
                 value={username}
                 onChangeText={setUsername}
                 placeholder="Geli username-kaaga"
@@ -120,7 +119,7 @@ const LoginScreen = () => {
               />
               <Text style={styles.label}>Password</Text>
               <IconInput
-                icon="lock-closed-outline"
+                icon="🔒"
                 value={password}
                 onChangeText={setPassword}
                 placeholder="Geli password-kaaga"
@@ -152,7 +151,7 @@ const LoginScreen = () => {
 
               <Text style={styles.label}>Lambarka Telefoonka</Text>
               <IconInput
-                icon="call-outline"
+                icon="📞"
                 value={phone}
                 onChangeText={setPhone}
                 placeholder="Lambarka aad maqaayda ku siisay"
@@ -162,7 +161,7 @@ const LoginScreen = () => {
 
               <Text style={styles.label}>{mode === "register" ? "Samee Password" : "Password"}</Text>
               <IconInput
-                icon="lock-closed-outline"
+                icon="🔒"
                 value={password}
                 onChangeText={setPassword}
                 placeholder="Geli password-kaaga"
@@ -175,7 +174,7 @@ const LoginScreen = () => {
                 <>
                   <Text style={styles.label}>Xaqiiji Password</Text>
                   <IconInput
-                    icon="lock-closed-outline"
+                    icon="🔒"
                     value={confirmPassword}
                     onChangeText={setConfirmPassword}
                     placeholder="Mar labaad geli password-ka"
@@ -246,7 +245,7 @@ const styles = StyleSheet.create({
   note: { backgroundColor: "rgba(92,20,34,0.06)", color: "rgba(36,19,23,0.7)", padding: 10, borderRadius: 8, marginBottom: 12, fontSize: 12 },
   label: { fontSize: 13, color: "rgba(36,19,23,0.7)", marginBottom: 4, marginTop: 10 },
   inputWrap: { flexDirection: "row", alignItems: "center", borderWidth: 1, borderColor: COLORS.line, borderRadius: 12, backgroundColor: COLORS.surface, paddingHorizontal: 12 },
-  inputIcon: { marginRight: 8 },
+  inputIcon: { marginRight: 8, fontSize: 16 },
   input: { flex: 1, paddingVertical: 12, fontSize: 15, color: COLORS.ink },
   eyeBtn: { padding: 4 },
   button: { backgroundColor: COLORS.brand, borderRadius: 999, paddingVertical: 13, alignItems: "center", marginTop: 22 },

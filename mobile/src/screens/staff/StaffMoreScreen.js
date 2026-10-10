@@ -1,5 +1,4 @@
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { StaffHeader } from "../../components/UI";
 import { COLORS, TILE_COLORS } from "../../utils/format";
 import { useAuth } from "../../context/AuthContext";
@@ -12,33 +11,33 @@ const buildGroups = (staff) => {
     {
       title: "Ardayda & Waalidiinta",
       items: [
-        { icon: "school-outline", label: "Ardayda", route: "Students" },
-        { icon: "people-outline", label: "Waalidiinta", route: "Parents" },
+        { icon: "🎓", label: "Ardayda", route: "Students" },
+        { icon: "👥", label: "Waalidiinta", route: "Parents" },
       ],
     },
     {
       title: "Maaliyadda",
       items: [
-        { icon: "receipt-outline", label: "Invoices", route: "Invoices" },
-        { icon: "card-outline", label: "Kharashaadka", route: "Expenses" },
-        { icon: "bar-chart-outline", label: "Xisaab-xirka", route: "ProfitLoss" },
-        { icon: "alert-circle-outline", label: "Deymaha", route: "OutstandingBalances" },
+        { icon: "🧾", label: "Invoices", route: "Invoices" },
+        { icon: "💳", label: "Kharashaadka", route: "Expenses" },
+        { icon: "📊", label: "Xisaab-xirka", route: "ProfitLoss" },
+        { icon: "⚠️", label: "Deymaha", route: "OutstandingBalances" },
       ],
     },
     {
       title: "Nidaamka Cuntada",
       items: [
-        { icon: "business-outline", label: "Fasallada", route: "Classes" },
-        { icon: "fast-food-outline", label: "Meal Plans", route: "MealPlans" },
-        { icon: "sunny-outline", label: "Fasaxyada", route: "Holidays" },
-        { icon: "calendar-outline", label: "Sannadaha", route: "AcademicYears" },
+        { icon: "🏫", label: "Fasallada", route: "Classes" },
+        { icon: "🍱", label: "Meal Plans", route: "MealPlans" },
+        { icon: "🏖️", label: "Fasaxyada", route: "Holidays" },
+        { icon: "📅", label: "Sannadaha", route: "AcademicYears" },
       ],
     },
     {
       title: "Warbixinnada",
       items: [
-        { icon: "trending-up-outline", label: "Warbixin Bille", route: "MonthlyReport" },
-        { icon: "stats-chart-outline", label: "Warbixin Sannadeed", route: "AnnualReport" },
+        { icon: "📈", label: "Warbixin Bille", route: "MonthlyReport" },
+        { icon: "📆", label: "Warbixin Sannadeed", route: "AnnualReport" },
       ],
     },
   ];
@@ -47,12 +46,12 @@ const buildGroups = (staff) => {
     groups.push({
       title: "Maamulka",
       items: [
-        { icon: "people-circle-outline", label: "Isticmaalayaasha", route: "Users" },
-        { icon: "settings-outline", label: "Settings", route: "Settings" },
+        { icon: "🧑‍💼", label: "Isticmaalayaasha", route: "Users" },
+        { icon: "⚙️", label: "Settings", route: "Settings" },
       ],
     });
   } else if (canFinance) {
-    groups.push({ title: "Maamulka", items: [{ icon: "settings-outline", label: "Settings", route: "Settings" }] });
+    groups.push({ title: "Maamulka", items: [{ icon: "⚙️", label: "Settings", route: "Settings" }] });
   }
 
   return groups;
@@ -77,7 +76,7 @@ const StaffMoreScreen = ({ navigation }) => {
                 return (
                   <TouchableOpacity key={i.route} style={styles.tile} onPress={() => navigation.navigate(i.route)}>
                     <View style={[styles.iconBox, { backgroundColor: palette.bg }]}>
-                      <Ionicons name={i.icon} size={22} color={palette.fg} />
+                      <Text style={{ fontSize: 22 }}>{i.icon}</Text>
                     </View>
                     <Text style={styles.tileLabel} numberOfLines={2}>{i.label}</Text>
                   </TouchableOpacity>
