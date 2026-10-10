@@ -10,25 +10,22 @@ import {
   Platform,
   ActivityIndicator,
 } from "react-native";
-import { useNavigation, DrawerActions } from "@react-navigation/native";
-import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
 import { COLORS } from "../utils/format";
 
 export const StaffHeader = ({ title }) => {
-  const { staff } = useAuth();
-  const navigation = useNavigation();
+  const { staff, staffLogout } = useAuth();
   return (
     <View style={styles.header}>
-      <TouchableOpacity style={styles.menuBtn} onPress={() => navigation.dispatch(DrawerActions.openDrawer())}>
-        <Ionicons name="menu-outline" size={24} color="#fff" />
-      </TouchableOpacity>
       <View style={{ flex: 1 }}>
         <Text style={styles.headerTitle}>{title}</Text>
         <Text style={styles.headerSub} numberOfLines={1}>
           {staff?.fullName}
         </Text>
       </View>
+      <TouchableOpacity style={styles.logoutBtn} onPress={staffLogout}>
+        <Text style={styles.logoutText}>Ka Bax</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -126,7 +123,8 @@ const styles = StyleSheet.create({
   },
   headerTitle: { color: "#fff", fontSize: 18, fontWeight: "700" },
   headerSub: { color: "rgba(255,255,255,0.55)", fontSize: 12, marginTop: 2 },
-  menuBtn: { marginRight: 14 },
+  logoutBtn: { borderWidth: 1, borderColor: "rgba(255,255,255,0.25)", borderRadius: 999, paddingHorizontal: 14, paddingVertical: 7 },
+  logoutText: { color: "rgba(255,255,255,0.85)", fontSize: 13 },
   chipsWrap: { paddingVertical: 10, backgroundColor: COLORS.paper },
   chip: {
     borderWidth: 1,
