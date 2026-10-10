@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { useState } from "react";
 import {
   LayoutDashboard,
@@ -36,10 +36,28 @@ const NavItem = ({ to, icon: Icon, children, end, onClick }) => (
   </NavLink>
 );
 
+const NavGroup = ({ icon: Icon, label, paths, pathname, children }) => {
+  const containsActive = paths.some((p) => pathname.startsWith(p));
+  const [open, setOpen] = useState(containsActive);
+
+  return (
+    <div>
+      <button onClick={() => setOpen((o) => !o)} className={`${linkBase} ${linkInactive} w-full justify-between`}>
+        <span className="flex items-center gap-3">
+          <Icon size={17} className="shrink-0" />
+          {label}
+        </span>
+        {open ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
+      </button>
+      {open && <div className="pl-4 space-y-1 mt-1">{children}</div>}
+    </div>
+  );
+};
+
 const Sidebar = ({ open, onClose }) => {
   const { user } = useAuth();
+  const { pathname } = useLocation();
   const canFinance = user?.role === "admin" || user?.canManageFinance;
-  const [reportsOpen, setReportsOpen] = useState(true);
 
   return (
     <>
@@ -67,43 +85,69 @@ const Sidebar = ({ open, onClose }) => {
 
         <nav className="relative flex-1 px-3 py-4 space-y-1 overflow-y-auto">
           <NavItem to="/dashboard" end icon={LayoutDashboard} onClick={onClose}>Dashboard</NavItem>
-          <NavItem to="/students" icon={GraduationCap} onClick={onClose}>Ardayda</NavItem>
-          <NavItem to="/parents" icon={Users} onClick={onClose}>Waalidiinta</NavItem>
-          <NavItem to="/classes" icon={Layers} onClick={onClose}>Fasallada</NavItem>
-          <NavItem to="/meal-plans" icon={Utensils} onClick={onClose}>Meal Plans</NavItem>
-          <NavItem to="/attendance" icon={UtensilsCrossed} onClick={onClose}>Cuntada Maalinlaha</NavItem>
-          <NavItem to="/occasional-meals" icon={UserRound} onClick={onClose}>Cunto Mar-mar ah</NavItem>
-          <NavItem to="/foods" icon={Apple} onClick={onClose}>Cuntooyinka</NavItem>
-          <NavItem to="/menu" icon={CalendarDays} onClick={onClose}>Menu-ga</NavItem>
-          <NavItem to="/invoices" icon={Receipt} onClick={onClose}>Invoices</NavItem>
-          <NavItem to="/payments" icon={CreditCard} onClick={onClose}>Lacag Bixinta</NavItem>
-          <NavItem to="/outstanding-balances" icon={AlertTriangle} onClick={onClose}>Deymaha</NavItem>
-          <NavItem to="/expenses" icon={Wallet} onClick={onClose}>Kharashaadka</NavItem>
 
-          <button
-            onClick={() => setReportsOpen((o) => !o)}
-            className={`${linkBase} ${linkInactive} w-full justify-between`}
+          <NavGroup icon={Users} label="Ardayda & Waalidiinta" paths={["/students", "/parents"]} pathname={pathname}>
+            <NavItem to="/students" icon={GraduationCap} onClick={onClose}>Ardayda</NavItem>
+            <NavItem to="/parents" icon={Users} onClick={onClose}>Waalidiinta</NavItem>
+          </NavGroup>
+
+          <NavGroup
+            icon={UtensilsCrossed}
+            label="Nidaamka Cuntada"
+            paths={["/classes", "/meal-plans", "/attendance", "/occasional-meals", "/foods", "/menu"]}
+            pathname={pathname}
           >
-            <span className="flex items-center gap-3">
-              <BarChart3 size={17} className="shrink-0" />
-              Warbixinnada
-            </span>
-            {reportsOpen ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
-          </button>
-          {reportsOpen && (
-            <div className="pl-4 space-y-1">
-              <NavItem to="/reports/monthly" onClick={onClose}>Warbixin Bille</NavItem>
-              <NavItem to="/reports/annual" onClick={onClose}>Warbixin Sannadeed</NavItem>
-              <NavItem to="/reports/profit-loss" onClick={onClose}>Xisaab-xirka</NavItem>
-            </div>
-          )}
+            <NavItem to="/classes" icon={Layers} onClick={onClose}>Fasallada</NavItem>
+            <NavItem to="/meal-plans" icon={Utensils} onClick={onClose}>Meal Plans</NavItem>
+            <NavItem to="/attendance" icon={UtensilsCrossed} onClick={onClose}>Cuntada Maalinlaha</NavItem>
+            <NavItem to="/occasional-meals" icon={UserRound} onClick={onClose}>Cunto Mar-mar ah</NavItem>
+            <NavItem to="/foods" icon={Apple} onClick={onClose}>Cuntooyinka</NavItem>
+            <NavItem to="/menu" icon={CalendarDays} onClick={onClose}>Menu-ga</NavItem>
+          </NavGroup>
 
-          <NavItem to="/calendar" icon={CalendarRange} onClick={onClose}>Kalandarka Dugsiga</NavItem>
-          <NavItem to="/holidays" icon={CalendarRange} onClick={onClose}>Fasaxyada &amp; Lacagta</NavItem>
-          {canFinance && <NavItem to="/academic-years" icon={GraduationCap} onClick={onClose}>Sannadaha Dugsiga</NavItem>}
-          {user?.role === "admin" && <NavItem to="/users" icon={UserCog} onClick={onClose}>Isticmaalayaasha</NavItem>}
-          {user?.role === "admin" && <NavItem to="/audit-logs" icon={FileWarning} onClick={onClose}>Audit Logs</NavItem>}
-          <NavItem to="/settings" icon={SettingsIcon} onClick={onClose}>Dejinta</NavItem>
+          <NavGroup
+            icon={Wallet}
+            label="Maaliyadda"
+            paths={["/invoices", "/payments", "/outstanding-balances", "/expenses"]}
+            pathname={pathname}
+          >
+            <NavItem to="/invoices" icon={Receipt} onClick={onClose}>Invoices</NavItem>
+            <NavItem to="/payments" icon={CreditCard} onClick={onClose}>Lacag Bixinta</NavItem>
+            <NavItem to="/outstanding-balances" icon={AlertTriangle} onClick={onClose}>Deymaha</NavItem>
+            <NavItem to="/expenses" icon={Wallet} onClick={onClose}>Kharashaadka</NavItem>
+          </NavGroup>
+
+          <NavGroup
+            icon={BarChart3}
+            label="Warbixinnada"
+            paths={["/reports/monthly", "/reports/annual", "/reports/profit-loss"]}
+            pathname={pathname}
+          >
+            <NavItem to="/reports/monthly" onClick={onClose}>Warbixin Bille</NavItem>
+            <NavItem to="/reports/annual" onClick={onClose}>Warbixin Sannadeed</NavItem>
+            <NavItem to="/reports/profit-loss" onClick={onClose}>Xisaab-xirka</NavItem>
+          </NavGroup>
+
+          <NavGroup
+            icon={CalendarRange}
+            label="Kalandarka & Fasaxyada"
+            paths={["/calendar", "/holidays", "/academic-years"]}
+            pathname={pathname}
+          >
+            <NavItem to="/calendar" icon={CalendarRange} onClick={onClose}>Kalandarka Dugsiga</NavItem>
+            <NavItem to="/holidays" icon={CalendarRange} onClick={onClose}>Fasaxyada &amp; Lacagta</NavItem>
+            {canFinance && <NavItem to="/academic-years" icon={GraduationCap} onClick={onClose}>Sannadaha Dugsiga</NavItem>}
+          </NavGroup>
+
+          {user?.role === "admin" ? (
+            <NavGroup icon={UserCog} label="Maamulka" paths={["/users", "/audit-logs", "/settings"]} pathname={pathname}>
+              <NavItem to="/users" icon={UserCog} onClick={onClose}>Isticmaalayaasha</NavItem>
+              <NavItem to="/audit-logs" icon={FileWarning} onClick={onClose}>Audit Logs</NavItem>
+              <NavItem to="/settings" icon={SettingsIcon} onClick={onClose}>Dejinta</NavItem>
+            </NavGroup>
+          ) : (
+            <NavItem to="/settings" icon={SettingsIcon} onClick={onClose}>Dejinta</NavItem>
+          )}
         </nav>
       </aside>
     </>

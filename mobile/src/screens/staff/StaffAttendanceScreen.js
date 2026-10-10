@@ -42,7 +42,7 @@ const RosterRow = ({ row, onMark, marking, onReset, canReset }) => (
 const StaffAttendanceScreen = () => {
   const { staff } = useAuth();
   const [date, setDate] = useState(todayIso());
-  const [mealType, setMealType] = useState("lunch");
+  const [mealType, setMealType] = useState("breakfast");
   const [tab, setTab] = useState("roster");
   const [roster, setRoster] = useState(null);
   const [reportRows, setReportRows] = useState(null);

@@ -40,7 +40,7 @@ const RosterCard = ({ row, onMark, marking, onReset, canReset }) => (
 const Attendance = () => {
   const { user } = useAuth();
   const [date, setDate] = useState(todayIso());
-  const [mealType, setMealType] = useState("lunch");
+  const [mealType, setMealType] = useState("breakfast");
   const [classes, setClasses] = useState([]);
   const [classId, setClassId] = useState("");
   const [sectionId, setSectionId] = useState("");
