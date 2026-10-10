@@ -1,16 +1,16 @@
 export const COLORS = {
-  navy: "#0E1318",
-  navyLight: "#1C2530",
-  navyDark: "#07090C",
-  amber: "#FF8E28",
-  brand: "#FF8E28",
-  brandDark: "#E67A12",
+  navy: "#5C1422",
+  navyLight: "#73192C",
+  navyDark: "#3E0D17",
+  amber: "#C2770C",
+  brand: "#C2293D",
+  brandDark: "#9E1F30",
   success: "#2F7A4D",
   danger: "#C2412D",
-  paper: "#F7F4EF",
+  paper: "#F7F3F1",
   surface: "#FFFFFF",
-  ink: "#0E1318",
-  line: "#ECE6DD",
+  ink: "#241317",
+  line: "#ECE0DE",
 };
 
 export const TILE_COLORS = [

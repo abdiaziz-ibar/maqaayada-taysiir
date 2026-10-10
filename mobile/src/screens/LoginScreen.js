@@ -10,8 +10,21 @@ import {
   ScrollView,
   ActivityIndicator,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
 import { COLORS } from "../utils/format";
+
+const IconInput = ({ icon, secure, toggleSecure, showToggle, ...props }) => (
+  <View style={styles.inputWrap}>
+    <Ionicons name={icon} size={18} color="rgba(36,19,23,0.4)" style={styles.inputIcon} />
+    <TextInput style={styles.input} placeholderTextColor="#9CA3AF" secureTextEntry={secure} {...props} />
+    {showToggle && (
+      <TouchableOpacity onPress={toggleSecure} style={styles.eyeBtn}>
+        <Ionicons name={secure ? "eye-outline" : "eye-off-outline"} size={18} color="rgba(36,19,23,0.4)" />
+      </TouchableOpacity>
+    )}
+  </View>
+);
 
 const LoginScreen = () => {
   const { login, register, staffLogin } = useAuth();
@@ -21,6 +34,7 @@ const LoginScreen = () => {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -62,12 +76,16 @@ const LoginScreen = () => {
 
   return (
     <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <View style={styles.logoBadge}>
-          <Text style={styles.logoText}>MT</Text>
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
+        <View style={styles.hero}>
+          <View style={styles.heroBlobLarge} />
+          <View style={styles.heroBlobSmall} />
+          <View style={styles.logoBadge}>
+            <Text style={styles.logoText}>MT</Text>
+          </View>
+          <Text style={styles.title}>Maqaayda Taysiir</Text>
+          <Text style={styles.subtitle}>Taysiir International Schools</Text>
         </View>
-        <Text style={styles.title}>Maqaayda Taysiir</Text>
-        <Text style={styles.subtitle}>Taysiir International Schools</Text>
 
         <View style={styles.card}>
           <View style={styles.roleRow}>
@@ -85,27 +103,30 @@ const LoginScreen = () => {
             </TouchableOpacity>
           </View>
 
+          <Text style={styles.welcome}>Ku Soo Dhawoow</Text>
+          <Text style={styles.welcomeSub}>Gal xisaabtaada si aad u sii wadato.</Text>
+
           {role === "staff" ? (
             <>
               {error ? <Text style={styles.error}>{error}</Text> : null}
               <Text style={styles.label}>Username</Text>
-              <TextInput
-                style={styles.input}
+              <IconInput
+                icon="person-outline"
                 value={username}
                 onChangeText={setUsername}
                 placeholder="Geli username-kaaga"
-                placeholderTextColor="#9CA3AF"
                 autoCapitalize="none"
                 autoCorrect={false}
               />
               <Text style={styles.label}>Password</Text>
-              <TextInput
-                style={styles.input}
+              <IconInput
+                icon="lock-closed-outline"
                 value={password}
                 onChangeText={setPassword}
                 placeholder="Geli password-kaaga"
-                placeholderTextColor="#9CA3AF"
-                secureTextEntry
+                secure={!showPassword}
+                showToggle
+                toggleSecure={() => setShowPassword((s) => !s)}
               />
               <TouchableOpacity style={styles.button} onPress={handleSubmit} disabled={loading}>
                 {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Soo Gal (Log In)</Text>}
@@ -130,36 +151,37 @@ const LoginScreen = () => {
               )}
 
               <Text style={styles.label}>Lambarka Telefoonka</Text>
-              <TextInput
-                style={styles.input}
+              <IconInput
+                icon="call-outline"
                 value={phone}
                 onChangeText={setPhone}
                 placeholder="Lambarka aad maqaayda ku siisay"
-                placeholderTextColor="#9CA3AF"
                 keyboardType="phone-pad"
                 autoCapitalize="none"
               />
 
               <Text style={styles.label}>{mode === "register" ? "Samee Password" : "Password"}</Text>
-              <TextInput
-                style={styles.input}
+              <IconInput
+                icon="lock-closed-outline"
                 value={password}
                 onChangeText={setPassword}
                 placeholder="Geli password-kaaga"
-                placeholderTextColor="#9CA3AF"
-                secureTextEntry
+                secure={!showPassword}
+                showToggle
+                toggleSecure={() => setShowPassword((s) => !s)}
               />
 
               {mode === "register" && (
                 <>
                   <Text style={styles.label}>Xaqiiji Password</Text>
-                  <TextInput
-                    style={styles.input}
+                  <IconInput
+                    icon="lock-closed-outline"
                     value={confirmPassword}
                     onChangeText={setConfirmPassword}
                     placeholder="Mar labaad geli password-ka"
-                    placeholderTextColor="#9CA3AF"
-                    secureTextEntry
+                    secure={!showPassword}
+                    showToggle
+                    toggleSecure={() => setShowPassword((s) => !s)}
                   />
                 </>
               )}
@@ -169,6 +191,8 @@ const LoginScreen = () => {
               </TouchableOpacity>
             </>
           )}
+
+          <Text style={styles.footer}>© {new Date().getFullYear()} Taysiir International School</Text>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -176,46 +200,58 @@ const LoginScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: COLORS.navyDark },
-  container: { flexGrow: 1, alignItems: "center", justifyContent: "center", padding: 24 },
+  flex: { flex: 1, backgroundColor: COLORS.navy },
+  hero: {
+    backgroundColor: COLORS.navy,
+    paddingTop: 72,
+    paddingBottom: 56,
+    alignItems: "center",
+    overflow: "hidden",
+  },
+  heroBlobLarge: { position: "absolute", top: -60, right: -60, width: 180, height: 180, borderRadius: 90, backgroundColor: "rgba(255,255,255,0.06)" },
+  heroBlobSmall: { position: "absolute", bottom: -40, left: -40, width: 120, height: 120, borderRadius: 60, backgroundColor: "rgba(255,255,255,0.05)" },
   logoBadge: {
     width: 56,
     height: 56,
-    borderRadius: 14,
+    borderRadius: 16,
     backgroundColor: COLORS.brand,
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 12,
+    marginBottom: 14,
   },
   logoText: { color: "#fff", fontWeight: "700", fontSize: 20 },
-  title: { color: "#fff", fontSize: 22, fontWeight: "700", marginBottom: 2 },
-  subtitle: { color: "rgba(255,255,255,0.5)", fontSize: 13, marginBottom: 24 },
-  roleRow: { flexDirection: "row", backgroundColor: COLORS.paper, borderRadius: 999, padding: 4, marginBottom: 16 },
+  title: { color: "#fff", fontSize: 22, fontWeight: "700", marginBottom: 4 },
+  subtitle: { color: "rgba(255,255,255,0.6)", fontSize: 13 },
+  card: {
+    backgroundColor: COLORS.paper,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    marginTop: -28,
+    flex: 1,
+    padding: 24,
+  },
+  roleRow: { flexDirection: "row", backgroundColor: COLORS.surface, borderRadius: 999, padding: 4, marginBottom: 20, borderWidth: 1, borderColor: COLORS.line },
   roleTab: { flex: 1, paddingVertical: 9, borderRadius: 999, alignItems: "center" },
-  roleTabActive: { backgroundColor: COLORS.surface, shadowColor: "#000", shadowOpacity: 0.1, shadowRadius: 3, elevation: 2 },
-  roleText: { color: "rgba(20,24,33,0.5)", fontSize: 13, fontWeight: "600" },
-  roleTextActive: { color: COLORS.ink },
-  card: { backgroundColor: COLORS.surface, borderRadius: 12, padding: 20, width: "100%", maxWidth: 380 },
-  tabRow: { flexDirection: "row", backgroundColor: COLORS.paper, borderRadius: 999, padding: 4, marginBottom: 16 },
+  roleTabActive: { backgroundColor: COLORS.navy },
+  roleText: { color: "rgba(36,19,23,0.5)", fontSize: 13, fontWeight: "600" },
+  roleTextActive: { color: "#fff" },
+  welcome: { fontSize: 20, fontWeight: "700", color: COLORS.ink },
+  welcomeSub: { fontSize: 13, color: "rgba(36,19,23,0.5)", marginTop: 2, marginBottom: 16 },
+  tabRow: { flexDirection: "row", backgroundColor: COLORS.surface, borderRadius: 999, padding: 4, marginBottom: 16, borderWidth: 1, borderColor: COLORS.line },
   tab: { flex: 1, paddingVertical: 8, borderRadius: 999, alignItems: "center" },
   tabActive: { backgroundColor: COLORS.navy },
-  tabText: { color: "rgba(20,24,33,0.5)", fontSize: 13, fontWeight: "500" },
+  tabText: { color: "rgba(36,19,23,0.5)", fontSize: 13, fontWeight: "500" },
   tabTextActive: { color: "#fff" },
-  error: { backgroundColor: "rgba(179,64,42,0.1)", color: COLORS.danger, padding: 10, borderRadius: 8, marginBottom: 12, fontSize: 13 },
-  note: { backgroundColor: "rgba(31,58,95,0.05)", color: "rgba(20,24,33,0.7)", padding: 10, borderRadius: 8, marginBottom: 12, fontSize: 12 },
-  label: { fontSize: 13, color: "rgba(20,24,33,0.7)", marginBottom: 4, marginTop: 10 },
-  input: {
-    borderWidth: 1,
-    borderColor: COLORS.line,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 15,
-    color: COLORS.ink,
-    backgroundColor: COLORS.surface,
-  },
-  button: { backgroundColor: COLORS.brand, borderRadius: 999, paddingVertical: 13, alignItems: "center", marginTop: 20 },
+  error: { backgroundColor: "rgba(194,65,45,0.1)", color: COLORS.danger, padding: 10, borderRadius: 8, marginBottom: 12, fontSize: 13 },
+  note: { backgroundColor: "rgba(92,20,34,0.06)", color: "rgba(36,19,23,0.7)", padding: 10, borderRadius: 8, marginBottom: 12, fontSize: 12 },
+  label: { fontSize: 13, color: "rgba(36,19,23,0.7)", marginBottom: 4, marginTop: 10 },
+  inputWrap: { flexDirection: "row", alignItems: "center", borderWidth: 1, borderColor: COLORS.line, borderRadius: 12, backgroundColor: COLORS.surface, paddingHorizontal: 12 },
+  inputIcon: { marginRight: 8 },
+  input: { flex: 1, paddingVertical: 12, fontSize: 15, color: COLORS.ink },
+  eyeBtn: { padding: 4 },
+  button: { backgroundColor: COLORS.brand, borderRadius: 999, paddingVertical: 13, alignItems: "center", marginTop: 22 },
   buttonText: { color: "#fff", fontWeight: "700", fontSize: 15 },
+  footer: { textAlign: "center", color: "rgba(36,19,23,0.35)", fontSize: 11, marginTop: 20 },
 });
 
 export default LoginScreen;

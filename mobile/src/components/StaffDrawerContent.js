@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { DrawerContentScrollView } from "@react-navigation/drawer";
 import { Ionicons } from "@expo/vector-icons";
@@ -18,6 +19,7 @@ const buildGroups = (staff) => {
   const groups = [
     {
       title: "Ardayda & Waalidiinta",
+      icon: "people-outline",
       items: [
         { icon: "school-outline", label: "Ardayda", route: "Students" },
         { icon: "people-outline", label: "Waalidiinta", route: "Parents" },
@@ -25,6 +27,7 @@ const buildGroups = (staff) => {
     },
     {
       title: "Maaliyadda",
+      icon: "wallet-outline",
       items: [
         { icon: "receipt-outline", label: "Invoices", route: "Invoices" },
         { icon: "card-outline", label: "Kharashaadka", route: "Expenses" },
@@ -34,17 +37,17 @@ const buildGroups = (staff) => {
     },
     {
       title: "Nidaamka Cuntada",
+      icon: "restaurant-outline",
       items: [
         { icon: "business-outline", label: "Fasallada", route: "Classes" },
         { icon: "fast-food-outline", label: "Meal Plans", route: "MealPlans" },
-        { icon: "nutrition-outline", label: "Cuntooyinka", route: "Foods" },
-        { icon: "clipboard-outline", label: "Menu-ga", route: "Menu" },
         { icon: "sunny-outline", label: "Fasaxyada", route: "Holidays" },
         { icon: "calendar-outline", label: "Sannadaha", route: "AcademicYears" },
       ],
     },
     {
       title: "Warbixinnada",
+      icon: "stats-chart-outline",
       items: [
         { icon: "trending-up-outline", label: "Warbixin Bille", route: "MonthlyReport" },
         { icon: "stats-chart-outline", label: "Warbixin Sannadeed", route: "AnnualReport" },
@@ -55,14 +58,14 @@ const buildGroups = (staff) => {
   if (isAdmin) {
     groups.push({
       title: "Maamulka",
+      icon: "shield-checkmark-outline",
       items: [
         { icon: "people-circle-outline", label: "Isticmaalayaasha", route: "Users" },
         { icon: "settings-outline", label: "Settings", route: "Settings" },
-        { icon: "document-text-outline", label: "Audit Logs", route: "AuditLogs" },
       ],
     });
   } else if (canFinance) {
-    groups.push({ title: "Maamulka", items: [{ icon: "settings-outline", label: "Settings", route: "Settings" }] });
+    groups.push({ title: "Maamulka", icon: "shield-checkmark-outline", items: [{ icon: "settings-outline", label: "Settings", route: "Settings" }] });
   }
 
   return groups;
@@ -74,6 +77,30 @@ const DrawerRow = ({ icon, label, active, onPress }) => (
     <Text style={[styles.rowLabel, active && styles.rowLabelActive]}>{label}</Text>
   </TouchableOpacity>
 );
+
+const DrawerGroup = ({ group, activeRoute, go }) => {
+  const containsActive = group.items.some((i) => i.route === activeRoute);
+  const [open, setOpen] = useState(containsActive);
+
+  return (
+    <View style={styles.section}>
+      <TouchableOpacity style={styles.groupHeader} onPress={() => setOpen((o) => !o)}>
+        <View style={styles.groupHeaderLeft}>
+          <Ionicons name={group.icon} size={18} color={COLORS.ink} />
+          <Text style={styles.groupTitle}>{group.title}</Text>
+        </View>
+        <Ionicons name={open ? "chevron-down" : "chevron-forward"} size={16} color="rgba(36,19,23,0.4)" />
+      </TouchableOpacity>
+      {open && (
+        <View style={styles.groupBody}>
+          {group.items.map((i) => (
+            <DrawerRow key={i.route} icon={i.icon} label={i.label} active={activeRoute === i.route} onPress={() => go(i.route)} />
+          ))}
+        </View>
+      )}
+    </View>
+  );
+};
 
 const StaffDrawerContent = (props) => {
   const { staff, staffLogout } = useAuth();
@@ -103,12 +130,7 @@ const StaffDrawerContent = (props) => {
         </View>
 
         {groups.map((g) => (
-          <View key={g.title} style={styles.section}>
-            <Text style={styles.groupTitle}>{g.title}</Text>
-            {g.items.map((i) => (
-              <DrawerRow key={i.route} icon={i.icon} label={i.label} active={activeRoute === i.route} onPress={() => go(i.route)} />
-            ))}
-          </View>
+          <DrawerGroup key={g.title} group={g} activeRoute={activeRoute} go={go} />
         ))}
       </DrawerContentScrollView>
 
@@ -124,13 +146,16 @@ const styles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: COLORS.surface },
   profile: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: COLORS.line, flexDirection: "row", alignItems: "center", gap: 12 },
   avatar: { width: 48, height: 48, borderRadius: 24, backgroundColor: COLORS.brand, alignItems: "center", justifyContent: "center" },
-  avatarText: { color: COLORS.ink, fontWeight: "700", fontSize: 18 },
+  avatarText: { color: "#fff", fontWeight: "700", fontSize: 18 },
   name: { fontSize: 15, fontWeight: "700", color: COLORS.ink, flexShrink: 1 },
-  role: { fontSize: 12, color: "rgba(14,19,24,0.5)", marginTop: 2 },
-  section: { paddingHorizontal: 12, paddingTop: 14 },
-  groupTitle: { fontSize: 11, fontWeight: "700", color: "rgba(14,19,24,0.4)", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6, marginLeft: 10 },
-  row: { flexDirection: "row", alignItems: "center", gap: 14, paddingVertical: 11, paddingHorizontal: 10, borderRadius: 12 },
-  rowActive: { backgroundColor: "rgba(255,142,40,0.12)" },
+  role: { fontSize: 12, color: "rgba(36,19,23,0.5)", marginTop: 2 },
+  section: { paddingHorizontal: 12, paddingTop: 10 },
+  groupHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 10, paddingHorizontal: 10, borderRadius: 12 },
+  groupHeaderLeft: { flexDirection: "row", alignItems: "center", gap: 12 },
+  groupTitle: { fontSize: 13, fontWeight: "700", color: COLORS.ink },
+  groupBody: { paddingLeft: 10, marginTop: 2 },
+  row: { flexDirection: "row", alignItems: "center", gap: 14, paddingVertical: 10, paddingHorizontal: 10, borderRadius: 12 },
+  rowActive: { backgroundColor: "rgba(194,41,61,0.12)" },
   rowLabel: { fontSize: 14, color: COLORS.ink, fontWeight: "500" },
   rowLabelActive: { color: COLORS.brandDark, fontWeight: "700" },
   logout: { flexDirection: "row", alignItems: "center", gap: 14, paddingVertical: 16, paddingHorizontal: 22, borderTopWidth: 1, borderTopColor: COLORS.line },
