@@ -33,13 +33,17 @@ const create = async (req, res, next) => {
   }
 };
 
-// GET /api/occasional-meals?search=&paymentStatus=
+// GET /api/occasional-meals?search=&paymentStatus=&year=&month=
 const list = async (req, res, next) => {
   try {
     const { search, paymentStatus } = req.query;
+    const year = Number(req.query.year);
+    const month = Number(req.query.month);
+    const dateRange = year && month ? { gte: new Date(Date.UTC(year, month - 1, 1)), lt: new Date(Date.UTC(year, month, 1)) } : undefined;
     const meals = await prisma.occasionalMeal.findMany({
       where: {
         ...(paymentStatus ? { paymentStatus } : {}),
+        ...(dateRange ? { date: dateRange } : {}),
         ...(search ? { student: { fullName: { contains: search, mode: "insensitive" } } } : {}),
       },
       include: { student: { include: { class: true } } },

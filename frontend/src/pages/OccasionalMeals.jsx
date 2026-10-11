@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Search, Trash2 } from "lucide-react";
 import api from "../api/axios";
-import { todayIso, formatDate, mealTypeLabel, formatMoney } from "../utils/format";
+import { todayIso, formatDate, mealTypeLabel, formatMoney, monthLabel } from "../utils/format";
 import { useAuth } from "../context/AuthContext";
 import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
 
@@ -20,9 +20,16 @@ const OccasionalMeals = () => {
   const [meals, setMeals] = useState([]);
   const [payingId, setPayingId] = useState(null);
   const [deleting, setDeleting] = useState(null);
+  const now = new Date();
+  const [filterYear, setFilterYear] = useState(now.getFullYear());
+  const [filterMonth, setFilterMonth] = useState(now.getMonth() + 1);
+  const [filterStatus, setFilterStatus] = useState("");
 
-  const loadMeals = () => api.get("/occasional-meals").then((res) => setMeals(res.data.meals));
-  useEffect(() => { loadMeals(); }, []);
+  const loadMeals = () =>
+    api
+      .get("/occasional-meals", { params: { year: filterYear, month: filterMonth, ...(filterStatus ? { paymentStatus: filterStatus } : {}) } })
+      .then((res) => setMeals(res.data.meals));
+  useEffect(() => { loadMeals(); }, [filterYear, filterMonth, filterStatus]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!q.trim()) return setResults([]);
@@ -104,7 +111,20 @@ const OccasionalMeals = () => {
       </div>
 
       <div className="card overflow-x-auto">
-        <h2 className="text-lg mb-3">Taariikhda Cunto Mar-mar ah</h2>
+        <div className="flex items-center justify-between flex-wrap gap-3 mb-3">
+          <h2 className="text-lg">Taariikhda Cunto Mar-mar ah</h2>
+          <div className="flex items-center gap-2">
+            <select className="input-field !w-auto" value={filterMonth} onChange={(e) => setFilterMonth(Number(e.target.value))}>
+              {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => <option key={m} value={m}>{monthLabel(m)}</option>)}
+            </select>
+            <input type="number" className="input-field !w-24" value={filterYear} onChange={(e) => setFilterYear(Number(e.target.value))} />
+            <select className="input-field !w-auto" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+              <option value="">Dhammaan</option>
+              <option value="unpaid">Lama Bixin</option>
+              <option value="paid">La Bixiyey</option>
+            </select>
+          </div>
+        </div>
         <table className="table-base">
           <thead><tr><th>Taariikh</th><th>Arday</th><th>Fasal</th><th>Nooca</th><th className="text-right">Qiimaha</th><th>Lacagta</th><th></th></tr></thead>
           <tbody>
