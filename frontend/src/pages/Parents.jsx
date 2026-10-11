@@ -1,10 +1,24 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Search, X, Pencil, Trash2, FileText } from "lucide-react";
+import { Plus, Search, X, Pencil, Trash2, FileText, RefreshCcw, Users, UserCheck, UserX, GraduationCap } from "lucide-react";
 import api from "../api/axios";
 import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
 import { useAuth } from "../context/AuthContext";
 import { downloadWordTable } from "../utils/exportWord";
+
+const StatCard = ({ icon: Icon, value, label, color }) => (
+  <div className="card flex items-center gap-3 p-4">
+    <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-white shrink-0 ${color}`}>
+      <Icon size={20} />
+    </div>
+    <div>
+      <p className="text-xl font-display font-semibold leading-none">{value}</p>
+      <p className="text-ink/50 text-xs mt-1.5">{label}</p>
+    </div>
+  </div>
+);
+
+const STATUS_FILTERS = [["all", "Dhammaan"], ["active", "Firfircoon"], ["inactive", "Aan Firfircoonayn"]];
 
 const ParentModal = ({ open, onClose, onSaved, editing }) => {
   const [fullName, setFullName] = useState("");
@@ -87,6 +101,7 @@ const Parents = () => {
   const { user } = useAuth();
   const [parents, setParents] = useState([]);
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -118,23 +133,54 @@ const Parents = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search]);
 
+  const activeCount = parents.filter((p) => p.status === "active").length;
+  const inactiveCount = parents.length - activeCount;
+  const childrenCount = parents.reduce((sum, p) => sum + (p.students?.length || 0), 0);
+  const visibleParents = parents.filter((p) => statusFilter === "all" || p.status === statusFilter);
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-2xl">Waalidiinta</h1>
-        <div className="flex items-center gap-2">
-          <button onClick={exportWord} disabled={parents.length === 0} className="btn-secondary flex items-center gap-2">
-            <FileText size={16} /> Word ga dhoh
-          </button>
-          <button onClick={() => { setEditing(null); setShowAdd(true); }} className="btn-primary flex items-center gap-2">
-            <Plus size={16} /> Waalid Cusub
-          </button>
+        <div>
+          <h1 className="text-2xl">Waalidiinta</h1>
+          <p className="text-ink/50 text-sm mt-0.5">Maamul xogta waalidiinta iyo xiriirka ardaydooda</p>
         </div>
+        <button onClick={() => { setEditing(null); setShowAdd(true); }} className="btn-primary flex items-center gap-2">
+          <Plus size={16} /> Waalid Cusub
+        </button>
       </div>
 
-      <div className="relative max-w-sm">
-        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink/35" />
-        <input className="input-field pl-9" placeholder="Raadi magac ama telefoon..." value={search} onChange={(e) => setSearch(e.target.value)} />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <StatCard icon={Users} value={parents.length} label="Wadarta Waalidiinta" color="bg-[#2D6CDF]" />
+        <StatCard icon={UserCheck} value={activeCount} label="Firfircoon" color="bg-success" />
+        <StatCard icon={UserX} value={inactiveCount} label="Aan Firfircoonayn" color="bg-amber" />
+        <StatCard icon={GraduationCap} value={childrenCount} label="Wadarta Ardayda" color="bg-[#C23B8D]" />
+      </div>
+
+      <div className="card flex items-center flex-wrap gap-3 p-3">
+        <div className="relative flex-1 min-w-[220px]">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink/35" />
+          <input className="input-field pl-9" placeholder="Raadi magac ama telefoon..." value={search} onChange={(e) => setSearch(e.target.value)} />
+        </div>
+        <div className="flex items-center gap-2">
+          {STATUS_FILTERS.map(([v, label]) => (
+            <button
+              key={v}
+              onClick={() => setStatusFilter(v)}
+              className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap ${statusFilter === v ? "bg-brand text-white" : "bg-paper text-ink/60 hover:text-ink"}`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-1 ml-auto">
+          <button onClick={load} className="p-2 rounded-lg text-ink/50 hover:text-ink hover:bg-paper" title="Cusboonaysii">
+            <RefreshCcw size={16} />
+          </button>
+          <button onClick={exportWord} disabled={parents.length === 0} className="p-2 rounded-lg text-ink/50 hover:text-ink hover:bg-paper disabled:opacity-40" title="Word ga dhoh">
+            <FileText size={16} />
+          </button>
+        </div>
       </div>
 
       <div className="card overflow-x-auto">
@@ -143,7 +189,7 @@ const Parents = () => {
             <tr><th>Code</th><th>Magaca</th><th>Telefoonka</th><th>Ardayda</th><th>Xaalada</th><th></th></tr>
           </thead>
           <tbody>
-            {parents.map((p) => (
+            {visibleParents.map((p) => (
               <tr key={p._id} className="cursor-pointer hover:bg-paper" onClick={() => navigate(`/parents/${p._id}`)}>
                 <td>{p.parentCode}</td>
                 <td>{p.fullName}</td>
@@ -168,7 +214,7 @@ const Parents = () => {
                 </td>
               </tr>
             ))}
-            {!loading && parents.length === 0 && (
+            {!loading && visibleParents.length === 0 && (
               <tr><td colSpan={6} className="text-center text-ink/40 py-6">Waalid lama helin.</td></tr>
             )}
           </tbody>
