@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, Search, X, Pencil, Trash2, FileText, RefreshCcw, Users, UserCheck, UserX, GraduationCap } from "lucide-react";
+import { Plus, Search, X, Pencil, Trash2, FileText, RefreshCcw, Users, UserCheck, UserX, GraduationCap, ArrowUp, ArrowDown } from "lucide-react";
+
+const codeNumber = (code) => Number(String(code || "").replace(/\D/g, "")) || 0;
 import api from "../api/axios";
 import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
 import { useAuth } from "../context/AuthContext";
@@ -102,6 +104,7 @@ const Parents = () => {
   const [parents, setParents] = useState([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [codeSortDir, setCodeSortDir] = useState("desc");
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -136,7 +139,9 @@ const Parents = () => {
   const activeCount = parents.filter((p) => p.status === "active").length;
   const inactiveCount = parents.length - activeCount;
   const childrenCount = parents.reduce((sum, p) => sum + (p.students?.length || 0), 0);
-  const visibleParents = parents.filter((p) => statusFilter === "all" || p.status === statusFilter);
+  const visibleParents = parents
+    .filter((p) => statusFilter === "all" || p.status === statusFilter)
+    .sort((a, b) => (codeSortDir === "desc" ? codeNumber(b.parentCode) - codeNumber(a.parentCode) : codeNumber(a.parentCode) - codeNumber(b.parentCode)));
 
   return (
     <div className="space-y-4">
@@ -186,7 +191,18 @@ const Parents = () => {
       <div className="card overflow-x-auto">
         <table className="table-base">
           <thead>
-            <tr><th>Code</th><th>Magaca</th><th>Telefoonka</th><th>Ardayda</th><th>Xaalada</th><th></th></tr>
+            <tr>
+              <th>
+                <button
+                  onClick={() => setCodeSortDir((d) => (d === "desc" ? "asc" : "desc"))}
+                  className="flex items-center gap-1 hover:text-ink"
+                  title="Kala sooc Code-ka"
+                >
+                  Code {codeSortDir === "desc" ? <ArrowDown size={13} /> : <ArrowUp size={13} />}
+                </button>
+              </th>
+              <th>Magaca</th><th>Telefoonka</th><th>Ardayda</th><th>Xaalada</th><th></th>
+            </tr>
           </thead>
           <tbody>
             {visibleParents.map((p) => (
