@@ -194,7 +194,19 @@ const Parents = () => {
                 <td>{p.parentCode}</td>
                 <td>{p.fullName}</td>
                 <td>{p.phone}</td>
-                <td>{p.students?.map((s) => s.fullName).join(", ") || "-"}</td>
+                <td className="max-w-xs">
+                  {p.students?.length ? (
+                    <div className="flex flex-wrap gap-1.5">
+                      {p.students.map((s) => (
+                        <span key={s.id || s._id} className="bg-paper border border-line rounded-full px-2 py-0.5 text-xs whitespace-nowrap">
+                          {s.fullName}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-ink/40">-</span>
+                  )}
+                </td>
                 <td>
                   <span className={`badge ${p.status === "active" ? "badge-paid" : "badge-unpaid"}`}>
                     {p.status === "active" ? "Firfircoon" : "Aan Firfircoonayn"}
