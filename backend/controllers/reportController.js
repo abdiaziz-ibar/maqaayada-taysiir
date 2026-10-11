@@ -194,13 +194,19 @@ const profitAndLoss = async (req, res, next) => {
     const start = new Date(Date.UTC(year, month - 1, 1));
     const end = new Date(Date.UTC(year, month, 1));
 
-    const [payments, occasionalMeals, expenses] = await Promise.all([
-      prisma.payment.findMany({ where: { paymentDate: { gte: start, lt: end } } }),
+    // Meal-fee income is attributed by which invoice (year/month) the money
+    // paid off, not by when the payment transaction happened — a single
+    // payment can cover several months' invoices at once (e.g. catching up
+    // a September arrear together with October's bill), and counting the
+    // whole payment against the transaction date would bleed that other
+    // month's money into this one.
+    const [invoices, occasionalMeals, expenses] = await Promise.all([
+      prisma.invoice.findMany({ where: { year, month } }),
       prisma.occasionalMeal.findMany({ where: { date: { gte: start, lt: end }, paymentStatus: "paid" } }),
       prisma.expense.findMany({ where: { date: { gte: start, lt: end } } }),
     ]);
 
-    const mealFeeIncome = payments.reduce((sum, p) => sum + p.amount, 0);
+    const mealFeeIncome = invoices.reduce((sum, i) => sum + i.amountPaid, 0);
     const occasionalIncome = occasionalMeals.reduce((sum, m) => sum + (m.amountCharged || 0), 0);
     const totalIncome = mealFeeIncome + occasionalIncome;
 
