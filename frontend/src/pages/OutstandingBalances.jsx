@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Download } from "lucide-react";
+import { Download, AlertTriangle, Users } from "lucide-react";
 import api from "../api/axios";
 import { formatMoney, exportToExcel, monthLabel } from "../utils/format";
 
@@ -36,6 +36,8 @@ const OutstandingBalances = () => {
     );
   };
 
+  const totalOutstanding = rows.reduce((sum, r) => sum + r.outstanding, 0);
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
@@ -59,6 +61,27 @@ const OutstandingBalances = () => {
             <option value="unpaid">Unpaid</option>
           </select>
           <button onClick={doExport} className="btn-secondary flex items-center gap-2 text-sm"><Download size={14} /> Excel</button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 max-w-md">
+        <div className="card flex items-center gap-3 p-4">
+          <div className="w-11 h-11 rounded-xl flex items-center justify-center text-white shrink-0 bg-danger">
+            <AlertTriangle size={20} />
+          </div>
+          <div>
+            <p className="text-xl font-display font-semibold leading-none">{formatMoney(totalOutstanding)}</p>
+            <p className="text-ink/50 text-xs mt-1.5">Wadarta Deymaha{month ? ` — ${monthLabel(month)} ${year}` : ""}</p>
+          </div>
+        </div>
+        <div className="card flex items-center gap-3 p-4">
+          <div className="w-11 h-11 rounded-xl flex items-center justify-center text-white shrink-0 bg-[#2D6CDF]">
+            <Users size={20} />
+          </div>
+          <div>
+            <p className="text-xl font-display font-semibold leading-none">{rows.length}</p>
+            <p className="text-ink/50 text-xs mt-1.5">Waalid Deyn Leh</p>
+          </div>
         </div>
       </div>
 
