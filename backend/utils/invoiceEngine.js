@@ -16,6 +16,23 @@ const resolveAmount = (mealPlan, adjustment) => {
   }
 };
 
+// A student who enrolls partway through a billing month shouldn't be
+// charged for days before they joined. Returns the prorated amount, the
+// full amount if they were already enrolled by the 1st, or null if they
+// hadn't enrolled yet at all during that month (no invoice should exist).
+const proratedAmount = (amount, enrollmentDate, year, month) => {
+  const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  const monthStart = new Date(Date.UTC(year, month - 1, 1));
+  const monthEnd = new Date(Date.UTC(year, month - 1, daysInMonth));
+  const enrolled = new Date(Date.UTC(enrollmentDate.getUTCFullYear(), enrollmentDate.getUTCMonth(), enrollmentDate.getUTCDate()));
+
+  if (enrolled <= monthStart) return amount;
+  if (enrolled > monthEnd) return null;
+
+  const daysRemaining = daysInMonth - enrolled.getUTCDate() + 1;
+  return Math.round(amount * (daysRemaining / daysInMonth) * 100) / 100;
+};
+
 // Creates an Invoice for every active, meal-plan-enrolled student who
 // doesn't already have one for that year/month. Existing invoices (which may
 // already carry payments) are left untouched — re-running is always safe.
@@ -37,22 +54,26 @@ const generateInvoicesForMonth = async (prisma, { year, month, academicYearId })
   const toCreate = students.filter((s) => !alreadyBilled.has(s.id));
 
   const created = await prisma.$transaction(
-    toCreate.map((s) => {
-      const amount = resolveAmount(s.mealPlan, adjustmentFor(s.mealPlanId));
-      return prisma.invoice.create({
-        data: {
-          studentId: s.id,
-          academicYearId,
-          year,
-          month,
-          amountDue: amount,
-          balance: amount,
-        },
-      });
-    })
+    toCreate
+      .map((s) => {
+        const fullAmount = resolveAmount(s.mealPlan, adjustmentFor(s.mealPlanId));
+        const amount = proratedAmount(fullAmount, s.enrollmentDate, year, month);
+        if (amount === null) return null; // not yet enrolled during this month
+        return prisma.invoice.create({
+          data: {
+            studentId: s.id,
+            academicYearId,
+            year,
+            month,
+            amountDue: amount,
+            balance: amount,
+          },
+        });
+      })
+      .filter(Boolean)
   );
 
-  return { created: created.length, skipped: students.length - toCreate.length, invoices: created };
+  return { created: created.length, skipped: students.length - created.length, invoices: created };
 };
 
-module.exports = { resolveAmount, generateInvoicesForMonth };
+module.exports = { resolveAmount, proratedAmount, generateInvoicesForMonth };
