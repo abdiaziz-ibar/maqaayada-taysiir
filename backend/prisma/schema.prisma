@@ -183,8 +183,6 @@ model Invoice {
   balance        Float
   status         String   @default("unpaid") // "unpaid" | "partial" | "paid" | "overdue"
   dueDate        DateTime?
-  isProrated     Boolean  @default(false) // true when amountDue was reduced for a mid-month enrollment
-  proratedNote   String? // human-readable reason shown next to the amount when isProrated
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
