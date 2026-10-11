@@ -59,6 +59,9 @@ const generateInvoicesForMonth = async (prisma, { year, month, academicYearId })
         const fullAmount = resolveAmount(s.mealPlan, adjustmentFor(s.mealPlanId));
         const amount = proratedAmount(fullAmount, s.enrollmentDate, year, month);
         if (amount === null) return null; // not yet enrolled during this month
+        const isProrated = amount !== fullAmount;
+        const enrolled = s.enrollmentDate;
+        const enrolledLabel = `${String(enrolled.getUTCDate()).padStart(2, "0")}/${String(enrolled.getUTCMonth() + 1).padStart(2, "0")}/${enrolled.getUTCFullYear()}`;
         return prisma.invoice.create({
           data: {
             studentId: s.id,
@@ -67,6 +70,10 @@ const generateInvoicesForMonth = async (prisma, { year, month, academicYearId })
             month,
             amountDue: amount,
             balance: amount,
+            isProrated,
+            proratedNote: isProrated
+              ? `Ardaygan wuxuu ku biiray bishan ${enrolledLabel} — lacagtiisu waa qayb bil ah ($${amount.toFixed(2)} halkii $${fullAmount.toFixed(2)}).`
+              : undefined,
           },
         });
       })

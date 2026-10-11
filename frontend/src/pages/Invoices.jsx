@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { RefreshCcw, Trash2 } from "lucide-react";
+import { RefreshCcw, Trash2, Info } from "lucide-react";
 import api from "../api/axios";
 import { formatMoney, statusBadgeClass, statusLabel, monthLabel } from "../utils/format";
 import { useAuth } from "../context/AuthContext";
@@ -69,7 +69,16 @@ const Invoices = () => {
               <tr key={i.id}>
                 <td>{i.student.fullName}</td>
                 <td>{i.student.parent?.fullName} ({i.student.parent?.phone})</td>
-                <td className="text-right">{formatMoney(i.amountDue)}</td>
+                <td className="text-right">
+                  <div className="flex items-center justify-end gap-1.5">
+                    {formatMoney(i.amountDue)}
+                    {i.isProrated && (
+                      <span title={i.proratedNote} className="inline-flex items-center gap-1 bg-amber/10 text-amber rounded-full px-2 py-0.5 text-xs cursor-help">
+                        <Info size={11} /> Qayb Bil ah
+                      </span>
+                    )}
+                  </div>
+                </td>
                 <td className="text-right">{formatMoney(i.amountPaid)}</td>
                 <td className="text-right">{formatMoney(i.amountDue - i.amountPaid)}</td>
                 <td><span className={statusBadgeClass(i.status)}>{statusLabel(i.status)}</span></td>
