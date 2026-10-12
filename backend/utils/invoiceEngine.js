@@ -16,22 +16,14 @@ const resolveAmount = (mealPlan, adjustment) => {
   }
 };
 
-// Billing is always the full monthly price, regardless of which day of the
-// month the student enrolled on — no proration. The only check kept here is
-// that a student can't be billed for a month before they had even enrolled
-// yet (that would be billing them for a period they didn't exist in).
-const proratedAmount = (amount, enrollmentDate, year, month) => {
-  const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
-  const monthEnd = new Date(Date.UTC(year, month - 1, daysInMonth));
-  const enrolled = new Date(Date.UTC(enrollmentDate.getUTCFullYear(), enrollmentDate.getUTCMonth(), enrollmentDate.getUTCDate()));
-
-  if (enrolled > monthEnd) return null;
-  return amount;
-};
-
-// Creates an Invoice for every active, meal-plan-enrolled student who
-// doesn't already have one for that year/month. Existing invoices (which may
-// already carry payments) are left untouched — re-running is always safe.
+// Creates an Invoice for every active, meal-plan-enrolled student who was
+// marked "ate" at least once during that month, and doesn't already have an
+// invoice for it. A student with zero "ate" records that month is skipped
+// entirely — no invoice at all. A student who does get billed is always
+// charged the full monthly price (no proration by day count). Existing
+// invoices (which may already carry payments) are left untouched —
+// re-running later in the month, once more attendance has been marked, is
+// always safe and will pick up newly-qualifying students.
 const generateInvoicesForMonth = async (prisma, { year, month, academicYearId }) => {
   const students = await prisma.student.findMany({
     where: { status: "active", mealPlanId: { not: null } },
@@ -47,29 +39,34 @@ const generateInvoicesForMonth = async (prisma, { year, month, academicYearId })
     select: { studentId: true },
   });
   const alreadyBilled = new Set(existing.map((i) => i.studentId));
-  const toCreate = students.filter((s) => !alreadyBilled.has(s.id));
+  const candidates = students.filter((s) => !alreadyBilled.has(s.id));
+
+  const start = new Date(Date.UTC(year, month - 1, 1));
+  const end = new Date(Date.UTC(year, month, 1));
+  const ateRecords = await prisma.mealAttendance.findMany({
+    where: { studentId: { in: candidates.map((s) => s.id) }, date: { gte: start, lt: end }, status: "ate" },
+    select: { studentId: true },
+  });
+  const ateStudentIds = new Set(ateRecords.map((r) => r.studentId));
+  const toCreate = candidates.filter((s) => ateStudentIds.has(s.id));
 
   const created = await prisma.$transaction(
-    toCreate
-      .map((s) => {
-        const fullAmount = resolveAmount(s.mealPlan, adjustmentFor(s.mealPlanId));
-        const amount = proratedAmount(fullAmount, s.enrollmentDate, year, month);
-        if (amount === null) return null; // not yet enrolled during this month
-        return prisma.invoice.create({
-          data: {
-            studentId: s.id,
-            academicYearId,
-            year,
-            month,
-            amountDue: amount,
-            balance: amount,
-          },
-        });
-      })
-      .filter(Boolean)
+    toCreate.map((s) => {
+      const amount = resolveAmount(s.mealPlan, adjustmentFor(s.mealPlanId));
+      return prisma.invoice.create({
+        data: {
+          studentId: s.id,
+          academicYearId,
+          year,
+          month,
+          amountDue: amount,
+          balance: amount,
+        },
+      });
+    })
   );
 
   return { created: created.length, skipped: students.length - created.length, invoices: created };
 };
 
-module.exports = { resolveAmount, proratedAmount, generateInvoicesForMonth };
+module.exports = { resolveAmount, generateInvoicesForMonth };
