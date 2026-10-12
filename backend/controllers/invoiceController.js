@@ -42,6 +42,44 @@ const list = async (req, res, next) => {
   }
 };
 
+// PUT /api/invoices/:id  { amountDue } — manual correction (e.g. a wrongly
+// generated amount). Recomputes balance/status against the existing
+// amountPaid; refuses to drop the amount below what's already been paid.
+const update = async (req, res, next) => {
+  try {
+    const invoice = await prisma.invoice.findUnique({ where: { id: req.params.id } });
+    if (!invoice) return res.status(404).json({ message: "Invoice-kan lama helin." });
+
+    const amountDue = Number(req.body.amountDue);
+    if (!Number.isFinite(amountDue) || amountDue < 0) {
+      return res.status(400).json({ message: "Qadarka lacagta waa waajib oo waa inuu ahaadaa eber ama wax ka weyn." });
+    }
+    if (amountDue < invoice.amountPaid) {
+      return res.status(400).json({ message: "Qadarka cusub waa ka yar yahay lacagta horey loo bixiyay. Marka hore ka noqo (void) bixinta ka hor intaadan yareyn." });
+    }
+
+    const balance = amountDue - invoice.amountPaid;
+    const status = invoice.amountPaid <= 0 ? "unpaid" : balance <= 0 ? "paid" : "partial";
+
+    const updated = await prisma.invoice.update({
+      where: { id: invoice.id },
+      data: { amountDue, balance, status },
+    });
+
+    logAudit(prisma, {
+      userId: req.user._id,
+      action: "update",
+      module: "invoices",
+      recordId: updated.id,
+      previousValue: { amountDue: invoice.amountDue, balance: invoice.balance, status: invoice.status },
+      newValue: { amountDue: updated.amountDue, balance: updated.balance, status: updated.status },
+    });
+    res.json({ invoice: updated });
+  } catch (err) {
+    next(err);
+  }
+};
+
 // DELETE /api/invoices/:id — blocked if any payment has already been
 // allocated to it (void the payment first, so amounts stay consistent).
 const remove = async (req, res, next) => {
@@ -108,4 +146,4 @@ const reversePayment = async (req, res, next) => {
   }
 };
 
-module.exports = { generate, list, remove, reversePayment };
+module.exports = { generate, list, update, remove, reversePayment };

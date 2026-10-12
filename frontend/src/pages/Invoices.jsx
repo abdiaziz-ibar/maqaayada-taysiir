@@ -1,10 +1,61 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { RefreshCcw, Trash2 } from "lucide-react";
+import { RefreshCcw, Trash2, Pencil, X } from "lucide-react";
 import api from "../api/axios";
 import { formatMoney, statusBadgeClass, statusLabel, monthLabel } from "../utils/format";
 import { useAuth } from "../context/AuthContext";
 import ConfirmDeleteModal from "../components/ConfirmDeleteModal";
+
+const EditInvoiceModal = ({ invoice, onClose, onSaved }) => {
+  const [amountDue, setAmountDue] = useState("");
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (invoice) setAmountDue(String(invoice.amountDue));
+    setError("");
+  }, [invoice]);
+
+  if (!invoice) return null;
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSaving(true);
+    try {
+      await api.put(`/invoices/${invoice.id}`, { amountDue: Number(amountDue) });
+      onSaved();
+      onClose();
+    } catch (err) {
+      setError(err.response?.data?.message || "Khalad ayaa dhacay.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+      <div className="bg-surface rounded-lg p-6 w-full max-w-sm">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg">Wax Ka Beddel Invoice-ka</h2>
+          <button onClick={onClose}><X size={18} /></button>
+        </div>
+        <p className="text-sm text-ink/60 mb-3">{invoice.student.fullName} — {monthLabel(invoice.month)} {invoice.year}</p>
+        <form onSubmit={submit} className="space-y-3">
+          {error && <div className="bg-danger/10 text-danger text-sm rounded-md px-3 py-2">{error}</div>}
+          <div>
+            <label className="label-field">La Rabo (Qadarka Cusub)</label>
+            <input type="number" step="0.01" min="0" className="input-field" value={amountDue} onChange={(e) => setAmountDue(e.target.value)} required />
+          </div>
+          {invoice.amountPaid > 0 && (
+            <p className="text-xs text-ink/50">La Bixiyey horey: {formatMoney(invoice.amountPaid)} — qadarka cusub ma noqon karo mid ka yar tan.</p>
+          )}
+          <button type="submit" disabled={saving} className="btn-primary w-full">{saving ? "..." : "Kaydi"}</button>
+        </form>
+      </div>
+    </div>
+  );
+};
 
 const Invoices = () => {
   const navigate = useNavigate();
@@ -20,6 +71,7 @@ const Invoices = () => {
   const [message, setMessage] = useState("");
   const [deleting, setDeleting] = useState(null);
   const [reversing, setReversing] = useState(null);
+  const [editing, setEditing] = useState(null);
 
   const load = () => {
     setLoading(true);
@@ -76,6 +128,9 @@ const Invoices = () => {
                 <td>
                   <div className="flex items-center gap-3">
                     {i.status !== "paid" && <button onClick={() => navigate(`/payments/new?parentId=${i.student.parentId}`)} className="btn-secondary text-sm py-1.5 px-3">Bixi</button>}
+                    {canManageFinance && (
+                      <button onClick={() => setEditing(i)} className="text-ink/50 hover:text-ink" title="Wax ka beddel"><Pencil size={15} /></button>
+                    )}
                     {canManageFinance && i.amountPaid > 0 && (
                       <button onClick={() => setReversing(i)} className="text-link text-sm hover:underline">Ka noqo bixinta</button>
                     )}
@@ -90,6 +145,8 @@ const Invoices = () => {
           </tbody>
         </table>
       </div>
+
+      <EditInvoiceModal invoice={editing} onClose={() => setEditing(null)} onSaved={load} />
 
       <ConfirmDeleteModal
         open={!!deleting}
