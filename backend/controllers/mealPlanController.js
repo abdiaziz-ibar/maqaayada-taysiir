@@ -10,10 +10,10 @@ const list = async (req, res, next) => {
   }
 };
 
-// POST /api/meal-plans  { name, mealTypes: [], monthlyPrice, startDate?, endDate?, skipProration? }
+// POST /api/meal-plans  { name, mealTypes: [], monthlyPrice, startDate?, endDate? }
 const create = async (req, res, next) => {
   try {
-    const { name, mealTypes, monthlyPrice, startDate, endDate, skipProration } = req.body;
+    const { name, mealTypes, monthlyPrice, startDate, endDate } = req.body;
     if (!name || !Array.isArray(mealTypes) || mealTypes.length === 0 || monthlyPrice == null) {
       return res.status(400).json({ message: "Magaca, noocyada cuntada, iyo qiimaha bishii waa waajib." });
     }
@@ -24,7 +24,6 @@ const create = async (req, res, next) => {
         monthlyPrice: Number(monthlyPrice),
         startDate: startDate ? new Date(startDate) : undefined,
         endDate: endDate ? new Date(endDate) : undefined,
-        skipProration: Boolean(skipProration),
       },
     });
     res.status(201).json({ mealPlan });
@@ -36,7 +35,7 @@ const create = async (req, res, next) => {
 // PUT /api/meal-plans/:id
 const update = async (req, res, next) => {
   try {
-    const { name, mealTypes, monthlyPrice, startDate, endDate, isActive, skipProration } = req.body;
+    const { name, mealTypes, monthlyPrice, startDate, endDate, isActive } = req.body;
     const mealPlan = await prisma.mealPlan.update({
       where: { id: req.params.id },
       data: {
@@ -46,7 +45,6 @@ const update = async (req, res, next) => {
         startDate: startDate ? new Date(startDate) : undefined,
         endDate: endDate ? new Date(endDate) : undefined,
         isActive,
-        skipProration: skipProration != null ? Boolean(skipProration) : undefined,
       },
     });
     res.json({ mealPlan });

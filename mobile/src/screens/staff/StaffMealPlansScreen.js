@@ -12,7 +12,6 @@ const AddPlanModal = ({ visible, onClose, onSaved }) => {
   const [name, setName] = useState("");
   const [mealTypes, setMealTypes] = useState([]);
   const [monthlyPrice, setMonthlyPrice] = useState("");
-  const [skipProration, setSkipProration] = useState(false);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -23,8 +22,8 @@ const AddPlanModal = ({ visible, onClose, onSaved }) => {
     if (!name.trim() || mealTypes.length === 0 || !monthlyPrice) return setError("Dhammaan beeraha waa waajib.");
     setSaving(true);
     try {
-      await staffApi.post("/meal-plans", { name, mealTypes, monthlyPrice: Number(monthlyPrice), skipProration });
-      setName(""); setMealTypes([]); setMonthlyPrice(""); setSkipProration(false);
+      await staffApi.post("/meal-plans", { name, mealTypes, monthlyPrice: Number(monthlyPrice) });
+      setName(""); setMealTypes([]); setMonthlyPrice("");
       onSaved();
       onClose();
     } catch (err) {
@@ -45,10 +44,6 @@ const AddPlanModal = ({ visible, onClose, onSaved }) => {
         ))}
       </View>
       <Field label="Qiimaha Bishii" value={monthlyPrice} onChangeText={setMonthlyPrice} keyboardType="numeric" />
-      <TouchableOpacity style={styles.checkRow} onPress={() => setSkipProration((v) => !v)}>
-        <View style={[styles.checkbox, skipProration && styles.checkboxOn]}>{skipProration && <Text style={styles.checkmark}>✓</Text>}</View>
-        <Text style={styles.checkLabel}>Ha la qaybin bisha koowaad — qiimaha buuxa ha laga qaado xitaa haddii uu bisha dhexdeeda ku biiro.</Text>
-      </TouchableOpacity>
       <PrimaryButton title={saving ? "..." : "Kaydi"} onPress={submit} loading={saving} />
     </ScreenModal>
   );
@@ -74,11 +69,6 @@ const StaffMealPlansScreen = ({ navigation }) => {
     load();
   };
 
-  const toggleSkipProration = async (p) => {
-    await staffApi.put(`/meal-plans/${p.id}`, { skipProration: !p.skipProration });
-    load();
-  };
-
   return (
     <View style={styles.flex}>
       <ScreenHeader title="Meal Plans" onBack={() => navigation.goBack()} />
@@ -96,13 +86,9 @@ const StaffMealPlansScreen = ({ navigation }) => {
               <Text style={styles.price}>{formatMoney(p.monthlyPrice)}/bishii</Text>
             </View>
             <Text style={styles.meta}>{p.mealTypes.join(", ")}</Text>
-            <Text style={styles.meta}>{p.skipProration ? "Buuxa had iyo jeer" : "Qayb bil ah markii la biiro"}</Text>
             <View style={[styles.rowBetween, { marginTop: 8 }]}>
               <TouchableOpacity onPress={() => toggleActive(p)}>
                 <Text style={styles.link}>{p.isActive ? "Xir" : "Furan"}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => toggleSkipProration(p)}>
-                <Text style={styles.link}>{p.skipProration ? "Ogolow qaybinta" : "Ha qaybin"}</Text>
               </TouchableOpacity>
               {staff?.role === "admin" && (
                 <TouchableOpacity onPress={() => setDeleting(p)}>
@@ -136,11 +122,6 @@ const styles = StyleSheet.create({
   deleteText: { color: COLORS.danger, fontSize: 13 },
   label: { fontSize: 13, color: "rgba(20,24,33,0.7)", marginTop: 10, marginBottom: 6 },
   empty: { textAlign: "center", color: "rgba(20,24,33,0.4)", marginTop: 40 },
-  checkRow: { flexDirection: "row", alignItems: "flex-start", gap: 10, marginTop: 14 },
-  checkbox: { width: 20, height: 20, borderRadius: 5, borderWidth: 1.5, borderColor: COLORS.line, alignItems: "center", justifyContent: "center", marginTop: 1 },
-  checkboxOn: { backgroundColor: COLORS.brand, borderColor: COLORS.brand },
-  checkmark: { color: "#fff", fontSize: 13, fontWeight: "700" },
-  checkLabel: { flex: 1, fontSize: 12, color: "rgba(20,24,33,0.7)" },
 });
 
 export default StaffMealPlansScreen;

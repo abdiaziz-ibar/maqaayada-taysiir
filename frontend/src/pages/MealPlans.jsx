@@ -11,14 +11,13 @@ const MealPlanModal = ({ open, onClose, onSaved, editing }) => {
   const [name, setName] = useState("");
   const [mealTypes, setMealTypes] = useState([]);
   const [monthlyPrice, setMonthlyPrice] = useState("");
-  const [skipProration, setSkipProration] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!open) return;
-    if (editing) { setName(editing.name); setMealTypes(editing.mealTypes); setMonthlyPrice(String(editing.monthlyPrice)); setSkipProration(Boolean(editing.skipProration)); }
-    else { setName(""); setMealTypes([]); setMonthlyPrice(""); setSkipProration(false); }
+    if (editing) { setName(editing.name); setMealTypes(editing.mealTypes); setMonthlyPrice(String(editing.monthlyPrice)); }
+    else { setName(""); setMealTypes([]); setMonthlyPrice(""); }
   }, [open, editing]);
 
   if (!open) return null;
@@ -31,7 +30,7 @@ const MealPlanModal = ({ open, onClose, onSaved, editing }) => {
     if (mealTypes.length === 0) return setError("Dooro ugu yaraan hal nooc oo cunto ah.");
     setLoading(true);
     try {
-      const payload = { name, mealTypes, monthlyPrice: Number(monthlyPrice), skipProration };
+      const payload = { name, mealTypes, monthlyPrice: Number(monthlyPrice) };
       if (editing) await api.put(`/meal-plans/${editing.id}`, payload);
       else await api.post("/meal-plans", payload);
       onSaved();
@@ -70,12 +69,6 @@ const MealPlanModal = ({ open, onClose, onSaved, editing }) => {
             <label className="label-field">Qiimaha Bishii</label>
             <input type="number" step="0.01" className="input-field" value={monthlyPrice} onChange={(e) => setMonthlyPrice(e.target.value)} required />
           </div>
-          <label className="flex items-start gap-2 text-sm bg-paper rounded-md px-3 py-2">
-            <input type="checkbox" className="mt-0.5" checked={skipProration} onChange={(e) => setSkipProration(e.target.checked)} />
-            <span>
-              Ha la qaybin bisha koowaad (no proration) — ardayga plan-kan ku jira bil kastaba qiimaha buuxa ha laga qaado, xitaa haddii uu bisha dhexdeeda ku biiro.
-            </span>
-          </label>
           <button type="submit" disabled={loading} className="btn-primary w-full">{loading ? "..." : "Kaydi"}</button>
         </form>
       </div>
@@ -112,7 +105,7 @@ const MealPlans = () => {
 
       <div className="card overflow-x-auto">
         <table className="table-base">
-          <thead><tr><th>Magaca</th><th>Noocyada</th><th className="text-right">Qiimaha Bishii</th><th>Xaalada</th><th>Proration</th>{canManage && <th></th>}</tr></thead>
+          <thead><tr><th>Magaca</th><th>Noocyada</th><th className="text-right">Qiimaha Bishii</th><th>Xaalada</th>{canManage && <th></th>}</tr></thead>
           <tbody>
             {plans.map((p) => (
               <tr key={p.id}>
@@ -120,7 +113,6 @@ const MealPlans = () => {
                 <td className="capitalize">{p.mealTypes.join(", ")}</td>
                 <td className="text-right">{formatMoney(p.monthlyPrice)}</td>
                 <td><span className={`badge ${p.isActive ? "badge-paid" : "badge-unpaid"}`}>{p.isActive ? "Firfircoon" : "Xiran"}</span></td>
-                <td>{p.skipProration ? <span className="badge badge-partial">Buuxa Had iyo Jeer</span> : <span className="text-ink/40 text-sm">Qayb Bil ah</span>}</td>
                 {canManage && (
                   <td>
                     <div className="flex items-center gap-3">

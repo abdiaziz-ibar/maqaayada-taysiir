@@ -16,21 +16,17 @@ const resolveAmount = (mealPlan, adjustment) => {
   }
 };
 
-// A student who enrolls partway through a billing month shouldn't be
-// charged for days before they joined. Returns the prorated amount, the
-// full amount if they were already enrolled by the 1st, or null if they
-// hadn't enrolled yet at all during that month (no invoice should exist).
+// Billing is always the full monthly price, regardless of which day of the
+// month the student enrolled on — no proration. The only check kept here is
+// that a student can't be billed for a month before they had even enrolled
+// yet (that would be billing them for a period they didn't exist in).
 const proratedAmount = (amount, enrollmentDate, year, month) => {
   const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
-  const monthStart = new Date(Date.UTC(year, month - 1, 1));
   const monthEnd = new Date(Date.UTC(year, month - 1, daysInMonth));
   const enrolled = new Date(Date.UTC(enrollmentDate.getUTCFullYear(), enrollmentDate.getUTCMonth(), enrollmentDate.getUTCDate()));
 
-  if (enrolled <= monthStart) return amount;
   if (enrolled > monthEnd) return null;
-
-  const daysRemaining = daysInMonth - enrolled.getUTCDate() + 1;
-  return Math.round(amount * (daysRemaining / daysInMonth) * 100) / 100;
+  return amount;
 };
 
 // Creates an Invoice for every active, meal-plan-enrolled student who
@@ -57,12 +53,8 @@ const generateInvoicesForMonth = async (prisma, { year, month, academicYearId })
     toCreate
       .map((s) => {
         const fullAmount = resolveAmount(s.mealPlan, adjustmentFor(s.mealPlanId));
-        const prorated = proratedAmount(fullAmount, s.enrollmentDate, year, month);
-        if (prorated === null) return null; // not yet enrolled during this month
-        // A plan marked skipProration always bills the full monthly price,
-        // even for a mid-month enrollment — it just still skips months
-        // before the student existed at all (prorated === null above).
-        const amount = s.mealPlan.skipProration ? fullAmount : prorated;
+        const amount = proratedAmount(fullAmount, s.enrollmentDate, year, month);
+        if (amount === null) return null; // not yet enrolled during this month
         return prisma.invoice.create({
           data: {
             studentId: s.id,
